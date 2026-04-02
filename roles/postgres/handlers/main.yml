@@ -1,0 +1,11 @@
+---
+- name: postgres reload systemd
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+  when: not ansible_check_mode
+
+- name: postgres restart service
+  ansible.builtin.systemd_service:
+    name: postgres.service
+    state: restarted
+  when: not ansible_check_mode

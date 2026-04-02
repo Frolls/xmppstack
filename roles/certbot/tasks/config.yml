@@ -1,0 +1,33 @@
+---
+- name: Install certbot helper scripts
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  loop:
+    - src: scripts/certbot-bootstrap.sh.j2
+      dest: "{{ xmpp_stack_app_root }}/scripts/certbot-bootstrap.sh"
+      mode: "0755"
+    - src: scripts/certbot-renew.sh.j2
+      dest: "{{ xmpp_stack_app_root }}/scripts/certbot-renew.sh"
+      mode: "0755"
+
+- name: Install certbot renewal units
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "0644"
+  loop:
+    - src: systemd/certbot-renew.service.j2
+      dest: /etc/systemd/system/certbot-renew.service
+    - src: systemd/certbot-renew.timer.j2
+      dest: /etc/systemd/system/certbot-renew.timer
+  notify:
+    - certbot reload systemd
+
+- name: Flush certbot handlers after config changes
+  ansible.builtin.meta: flush_handlers

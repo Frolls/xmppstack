@@ -1,0 +1,18 @@
+[Unit]
+Description=coturn
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image={{ xmpp_stack_coturn_image }}
+ContainerName=coturn
+Volume={{ xmpp_stack_letsencrypt_dir }}:/etc/letsencrypt:ro,Z
+Volume={{ xmpp_stack_app_root }}/containers/coturn/turnserver.conf:/etc/coturn/turnserver.conf:ro,Z
+Network=host
+
+[Service]
+Restart=always
+TimeoutStartSec=120
+
+[Install]
+WantedBy=multi-user.target

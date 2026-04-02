@@ -1,0 +1,20 @@
+[Unit]
+Description=PostgreSQL for ejabberd
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image={{ xmpp_stack_postgres_image }}
+ContainerName=postgres
+Environment=POSTGRES_DB={{ xmpp_stack_postgres_db }}
+Environment=POSTGRES_USER={{ xmpp_stack_postgres_user }}
+EnvironmentFile={{ xmpp_stack_app_root }}/.env
+Volume={{ xmpp_stack_postgres_data_dir }}:/var/lib/postgresql/data:Z
+Network=xmpp.network
+
+[Service]
+Restart=always
+TimeoutStartSec=120
+
+[Install]
+WantedBy=multi-user.target

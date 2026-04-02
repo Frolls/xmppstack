@@ -1,0 +1,40 @@
+---
+- name: Render runtime env file
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ xmpp_stack_app_root }}/.env"
+    owner: root
+    group: root
+    mode: "0640"
+  no_log: true
+
+- name: Install XMPP network Quadlet file
+  ansible.builtin.template:
+    src: quadlet/xmpp-network.network.j2
+    dest: /etc/containers/systemd/xmpp-network.network
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - common reload systemd
+
+- name: Install operational scripts
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  loop:
+    - src: scripts/backup-postgres.sh.j2
+      dest: "{{ xmpp_stack_app_root }}/scripts/backup-postgres.sh"
+      mode: "0755"
+    - src: scripts/backup-uploads.sh.j2
+      dest: "{{ xmpp_stack_app_root }}/scripts/backup-uploads.sh"
+      mode: "0755"
+    - src: scripts/restore-postgres.sh.j2
+      dest: "{{ xmpp_stack_app_root }}/scripts/restore-postgres.sh"
+      mode: "0755"
+    - src: scripts/rotate-logs.sh.j2
+      dest: "{{ xmpp_stack_app_root }}/scripts/rotate-logs.sh"
+      mode: "0755"

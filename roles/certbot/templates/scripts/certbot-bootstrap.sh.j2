@@ -1,0 +1,37 @@
+#!/usr/bin/env sh
+set -eu
+
+if [ -f "{{ xmpp_stack_app_root }}/.env" ]; then
+  set -a
+  . "{{ xmpp_stack_app_root }}/.env"
+  set +a
+fi
+
+: "${CERTBOT_EMAIL:?CERTBOT_EMAIL must be set}"
+: "${CERTBOT_DOMAINS:?CERTBOT_DOMAINS must be set}"
+
+mkdir -p {{ xmpp_stack_letsencrypt_dir }}
+
+systemctl start xmpp-network-network.service postgres.service || true
+
+DOMAINS_ARGS=""
+OLD_IFS="$IFS"
+IFS=','
+for domain in $CERTBOT_DOMAINS; do
+  DOMAINS_ARGS="$DOMAINS_ARGS -d $domain"
+done
+IFS="$OLD_IFS"
+
+systemctl stop nginx.service || true
+podman run --rm \
+  -p 80:80 \
+  -v {{ xmpp_stack_letsencrypt_dir }}:/etc/letsencrypt:Z \
+  docker.io/certbot/certbot:latest \
+  certonly \
+  --standalone \
+  --non-interactive \
+  --agree-tos \
+  --email "$CERTBOT_EMAIL" \
+  $DOMAINS_ARGS
+systemctl start nginx.service
+systemctl restart ejabberd.service coturn.service nginx.service

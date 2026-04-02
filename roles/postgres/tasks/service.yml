@@ -1,0 +1,10 @@
+---
+- name: Enable postgres service
+  ansible.builtin.systemd_service:
+    name: postgres.service
+    enabled: true
+
+- name: Start postgres service
+  ansible.builtin.systemd_service:
+    name: postgres.service
+    state: started

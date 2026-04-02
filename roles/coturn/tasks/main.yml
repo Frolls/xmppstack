@@ -1,0 +1,19 @@
+---
+- name: Configure coturn runtime
+  ansible.builtin.import_tasks: config.yml
+  tags:
+    - config
+    - coturn
+
+- name: Build coturn image when requested
+  ansible.builtin.import_tasks: images.yml
+  when: xmpp_stack_build_images
+  tags:
+    - images
+    - coturn
+
+- name: Ensure coturn service is enabled and conditionally started
+  ansible.builtin.import_tasks: service.yml
+  tags:
+    - services
+    - coturn

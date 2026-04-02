@@ -1,0 +1,32 @@
+---
+- name: Render ejabberd container build context
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  loop:
+    - src: containers/ejabberd/Containerfile.j2
+      dest: "{{ xmpp_stack_app_root }}/containers/ejabberd/Containerfile"
+      mode: "0644"
+    - src: containers/ejabberd/ejabberd.yml.j2
+      dest: "{{ xmpp_stack_app_root }}/containers/ejabberd/ejabberd.yml"
+      mode: "0644"
+  no_log: true
+  notify:
+    - ejabberd restart service
+
+- name: Install ejabberd Quadlet file
+  ansible.builtin.template:
+    src: quadlet/ejabberd.container.j2
+    dest: /etc/containers/systemd/ejabberd.container
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - ejabberd reload systemd
+    - ejabberd restart service
+
+- name: Flush ejabberd handlers after config changes
+  ansible.builtin.meta: flush_handlers

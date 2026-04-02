@@ -1,0 +1,5 @@
+---
+- name: Install host packages
+  ansible.builtin.package:
+    name: "{{ xmpp_stack_packages }}"
+    state: present

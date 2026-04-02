@@ -1,0 +1,16 @@
+---
+- name: Check whether certificate already exists for coturn
+  ansible.builtin.stat:
+    path: "{{ xmpp_stack_letsencrypt_dir }}/live/{{ xmpp_stack_domain }}/fullchain.pem"
+  register: xmpp_stack_coturn_cert_stat
+
+- name: Enable coturn service
+  ansible.builtin.systemd_service:
+    name: coturn.service
+    enabled: true
+
+- name: Start coturn service when certificates are available
+  ansible.builtin.systemd_service:
+    name: coturn.service
+    state: started
+  when: xmpp_stack_coturn_cert_stat.stat.exists

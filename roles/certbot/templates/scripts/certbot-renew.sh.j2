@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+set -eu
+
+mkdir -p {{ xmpp_stack_letsencrypt_dir }}
+
+systemctl stop nginx.service || true
+podman run --rm \
+  -p 80:80 \
+  -v {{ xmpp_stack_letsencrypt_dir }}:/etc/letsencrypt:Z \
+  docker.io/certbot/certbot:latest \
+  renew \
+  --standalone \
+  --quiet
+systemctl start nginx.service
+systemctl restart ejabberd.service coturn.service nginx.service

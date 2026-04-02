@@ -1,0 +1,44 @@
+events {}
+
+http {
+  map $http_upgrade $connection_upgrade {
+    default upgrade;
+    '' close;
+  }
+
+  upstream ejabberd_http {
+    server ejabberd:{{ xmpp_stack_ejabberd_http_port }};
+  }
+
+  server {
+    listen {{ xmpp_stack_http_port }};
+    listen [::]:{{ xmpp_stack_http_port }};
+    server_name {{ xmpp_stack_domain }} {{ xmpp_stack_upload_host }};
+
+    return 308 https://$host$request_uri;
+  }
+
+  server {
+    listen {{ xmpp_stack_https_port }} ssl http2;
+    listen [::]:{{ xmpp_stack_https_port }} ssl http2;
+    server_name {{ xmpp_stack_domain }} {{ xmpp_stack_upload_host }};
+
+    ssl_certificate /etc/letsencrypt/live/{{ xmpp_stack_domain }}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/{{ xmpp_stack_domain }}/privkey.pem;
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:SSL:10m;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+
+    location / {
+      proxy_pass http://ejabberd_http;
+      proxy_http_version 1.1;
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto https;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+      proxy_read_timeout 3600;
+    }
+  }
+}

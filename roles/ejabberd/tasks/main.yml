@@ -1,0 +1,19 @@
+---
+- name: Configure ejabberd runtime
+  ansible.builtin.import_tasks: config.yml
+  tags:
+    - config
+    - ejabberd
+
+- name: Build ejabberd image when requested
+  ansible.builtin.import_tasks: images.yml
+  when: xmpp_stack_build_images
+  tags:
+    - images
+    - ejabberd
+
+- name: Ensure ejabberd service is enabled and conditionally started
+  ansible.builtin.import_tasks: service.yml
+  tags:
+    - services
+    - ejabberd

@@ -1,0 +1,23 @@
+[Unit]
+Description=ejabberd
+After=postgres.service coturn.service
+Requires=postgres.service coturn.service
+
+[Container]
+Image={{ xmpp_stack_ejabberd_image }}
+ContainerName=ejabberd
+Volume={{ xmpp_stack_app_root }}/containers/ejabberd/ejabberd.yml:/home/ejabberd/conf/ejabberd.yml:ro,Z
+Volume={{ xmpp_stack_upload_dir }}:/var/lib/ejabberd/upload:Z
+Volume={{ xmpp_stack_letsencrypt_dir }}:/etc/letsencrypt:ro,Z
+PublishPort={{ xmpp_stack_c2s_port }}:{{ xmpp_stack_c2s_port }}
+{% if xmpp_stack_enable_federation %}
+PublishPort={{ xmpp_stack_s2s_port }}:{{ xmpp_stack_s2s_port }}
+{% endif %}
+Network=xmpp.network
+
+[Service]
+Restart=always
+TimeoutStartSec=120
+
+[Install]
+WantedBy=multi-user.target

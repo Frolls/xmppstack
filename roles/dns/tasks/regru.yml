@@ -1,0 +1,237 @@
+---
+- name: Validate Reg.ru credentials
+  ansible.builtin.assert:
+    that:
+      - xmpp_stack_dns_secrets.regru_username is defined
+      - xmpp_stack_dns_secrets.regru_username | length > 0
+      - xmpp_stack_dns_secrets.regru_password is defined
+      - xmpp_stack_dns_secrets.regru_password | length > 0
+    fail_msg: Set xmpp_stack_dns_secrets.regru_username and xmpp_stack_dns_secrets.regru_password in vault before enabling Reg.ru DNS management.
+
+- name: Validate Reg.ru standard record types
+  ansible.builtin.assert:
+    that:
+      - item.type in ["A", "AAAA", "CNAME"]
+    fail_msg: "Reg.ru backend currently supports standard record types A, AAAA, and CNAME only."
+  loop: "{{ xmpp_stack_dns_records }}"
+  loop_control:
+    label: "{{ item.type }} {{ item.record }}"
+
+- name: Fetch existing Reg.ru DNS records
+  ansible.builtin.uri:
+    url: "{{ xmpp_stack_dns_regru_api_endpoint }}/zone/get_resource_records"
+    method: POST
+    body_format: form-urlencoded
+    body:
+      username: "{{ xmpp_stack_dns_secrets.regru_username }}"
+      password: "{{ xmpp_stack_dns_secrets.regru_password }}"
+      input_format: json
+      input_data: "{{ {'domains': [{'dname': xmpp_stack_dns_zone}], 'output_content_type': 'plain'} | to_json }}"
+    return_content: true
+    status_code: 200
+  register: xmpp_stack_regru_get_records_raw
+  no_log: true
+
+- name: Parse Reg.ru DNS response
+  ansible.builtin.set_fact:
+    xmpp_stack_regru_get_records: "{{ xmpp_stack_regru_get_records_raw.json | default(xmpp_stack_regru_get_records_raw.content | from_json) }}"
+  no_log: true
+
+- name: Validate Reg.ru DNS response
+  ansible.builtin.assert:
+    that:
+      - xmpp_stack_regru_get_records.result == "success"
+      - xmpp_stack_regru_get_records.answer.domains | length > 0
+      - xmpp_stack_regru_get_records.answer.domains[0].result == "success"
+    fail_msg: "Reg.ru API did not return a successful DNS response for zone {{ xmpp_stack_dns_zone }}."
+  no_log: true
+
+- name: Store existing Reg.ru resource records
+  ansible.builtin.set_fact:
+    xmpp_stack_regru_existing_rrs: "{{ xmpp_stack_regru_get_records.answer.domains[0].rrs | default([]) }}"
+  no_log: true
+
+- name: Initialize Reg.ru record queues
+  ansible.builtin.set_fact:
+    xmpp_stack_regru_missing_records: []
+    xmpp_stack_regru_missing_srv_records: []
+    xmpp_stack_regru_missing_txt_records: []
+
+- name: Queue missing standard Reg.ru records
+  ansible.builtin.set_fact:
+    xmpp_stack_regru_missing_records: "{{ xmpp_stack_regru_missing_records + [item] }}"
+  loop: "{{ xmpp_stack_dns_records }}"
+  loop_control:
+    label: "{{ item.type }} {{ item.record }}"
+  when: >-
+    (
+      xmpp_stack_regru_existing_rrs
+      | selectattr('subname', 'equalto', item.record)
+      | selectattr('rectype', 'equalto', item.type)
+      | selectattr('content', 'equalto', item.value)
+      | list
+      | length
+    ) == 0
+  no_log: true
+
+- name: Queue missing Reg.ru SRV records
+  ansible.builtin.set_fact:
+    xmpp_stack_regru_missing_srv_records: "{{ xmpp_stack_regru_missing_srv_records + [item] }}"
+  loop: "{{ xmpp_stack_dns_srv_records }}"
+  loop_control:
+    label: "_{{ item.service }}._{{ item.proto }}"
+  when:
+    - xmpp_stack_dns_manage_srv
+    - >-
+      (
+        xmpp_stack_regru_existing_rrs
+        | selectattr('subname', 'equalto', '_' ~ item.service ~ '._' ~ item.proto)
+        | selectattr('rectype', 'equalto', 'SRV')
+        | selectattr('prio', 'equalto', (item.priority | default(10) | string))
+        | selectattr('content', 'search', item.value | regex_escape)
+        | list
+        | length
+      ) == 0
+  no_log: true
+
+- name: Queue missing Reg.ru TXT records
+  ansible.builtin.set_fact:
+    xmpp_stack_regru_missing_txt_records: "{{ xmpp_stack_regru_missing_txt_records + [item] }}"
+  loop: "{{ xmpp_stack_dns_txt_records }}"
+  loop_control:
+    label: "TXT {{ item.record }}"
+  when:
+    - xmpp_stack_dns_manage_txt
+    - >-
+      (
+        xmpp_stack_regru_existing_rrs
+        | selectattr('subname', 'equalto', item.record)
+        | selectattr('rectype', 'equalto', 'TXT')
+        | selectattr('content', 'equalto', item.value)
+        | list
+        | length
+      ) == 0
+  no_log: true
+
+- name: Ensure missing Reg.ru A/AAAA/CNAME records
+  ansible.builtin.uri:
+    url: "{{ xmpp_stack_dns_regru_api_endpoint }}/zone/{{ ({'A': 'add_alias', 'AAAA': 'add_aaaa', 'CNAME': 'add_cname'})[item.type] }}"
+    method: POST
+    body_format: form-urlencoded
+    body:
+      username: "{{ xmpp_stack_dns_secrets.regru_username }}"
+      password: "{{ xmpp_stack_dns_secrets.regru_password }}"
+      input_format: json
+      input_data: >-
+        {{
+          (
+            {
+              'domains': [{'dname': xmpp_stack_dns_zone}],
+              'subdomain': item.record,
+              'output_content_type': 'plain'
+            }
+          )
+          | combine(
+              item.type == 'CNAME'
+              | ternary({'canonical_name': item.value}, {'ipaddr': item.value})
+            )
+          | to_json
+        }}
+    return_content: true
+    status_code: 200
+  loop: "{{ xmpp_stack_regru_missing_records }}"
+  loop_control:
+    label: "{{ item.type }} {{ item.record }}"
+  register: xmpp_stack_regru_add_standard_results
+  changed_when: xmpp_stack_regru_missing_records | length > 0
+  no_log: true
+
+- name: Validate Reg.ru standard record results
+  ansible.builtin.assert:
+    that:
+      - (item.json | default(item.content | from_json)).result == "success"
+    fail_msg: "Reg.ru API failed while creating a standard DNS record."
+  loop: "{{ xmpp_stack_regru_add_standard_results.results | default([]) }}"
+  when: xmpp_stack_regru_missing_records | length > 0
+  no_log: true
+
+- name: Ensure missing Reg.ru SRV records
+  ansible.builtin.uri:
+    url: "{{ xmpp_stack_dns_regru_api_endpoint }}/zone/add_srv"
+    method: POST
+    body_format: form-urlencoded
+    body:
+      username: "{{ xmpp_stack_dns_secrets.regru_username }}"
+      password: "{{ xmpp_stack_dns_secrets.regru_password }}"
+      input_format: json
+      input_data: >-
+        {{
+          {
+            'domains': [{'dname': xmpp_stack_dns_zone}],
+            'service': '_' ~ item.service ~ '._' ~ item.proto,
+            'priority': item.priority | default(10),
+            'weight': item.weight | default(10),
+            'port': item.port,
+            'target': item.value,
+            'output_content_type': 'plain'
+          } | to_json
+        }}
+    return_content: true
+    status_code: 200
+  loop: "{{ xmpp_stack_regru_missing_srv_records }}"
+  loop_control:
+    label: "_{{ item.service }}._{{ item.proto }}"
+  when: xmpp_stack_dns_manage_srv
+  register: xmpp_stack_regru_add_srv_results
+  changed_when: xmpp_stack_regru_missing_srv_records | length > 0
+  no_log: true
+
+- name: Validate Reg.ru SRV record results
+  ansible.builtin.assert:
+    that:
+      - (item.json | default(item.content | from_json)).result == "success"
+    fail_msg: "Reg.ru API failed while creating an SRV DNS record."
+  loop: "{{ xmpp_stack_regru_add_srv_results.results | default([]) }}"
+  when:
+    - xmpp_stack_dns_manage_srv
+    - xmpp_stack_regru_missing_srv_records | length > 0
+  no_log: true
+
+- name: Ensure missing Reg.ru TXT records
+  ansible.builtin.uri:
+    url: "{{ xmpp_stack_dns_regru_api_endpoint }}/zone/add_txt"
+    method: POST
+    body_format: form-urlencoded
+    body:
+      username: "{{ xmpp_stack_dns_secrets.regru_username }}"
+      password: "{{ xmpp_stack_dns_secrets.regru_password }}"
+      input_format: json
+      input_data: >-
+        {{
+          {
+            'domains': [{'dname': xmpp_stack_dns_zone}],
+            'subdomain': item.record,
+            'text': item.value,
+            'output_content_type': 'plain'
+          } | to_json
+        }}
+    return_content: true
+    status_code: 200
+  loop: "{{ xmpp_stack_regru_missing_txt_records }}"
+  loop_control:
+    label: "TXT {{ item.record }}"
+  when: xmpp_stack_dns_manage_txt
+  register: xmpp_stack_regru_add_txt_results
+  changed_when: xmpp_stack_regru_missing_txt_records | length > 0
+  no_log: true
+
+- name: Validate Reg.ru TXT record results
+  ansible.builtin.assert:
+    that:
+      - (item.json | default(item.content | from_json)).result == "success"
+    fail_msg: "Reg.ru API failed while creating a TXT DNS record."
+  loop: "{{ xmpp_stack_regru_add_txt_results.results | default([]) }}"
+  when:
+    - xmpp_stack_dns_manage_txt
+    - xmpp_stack_regru_missing_txt_records | length > 0
+  no_log: true

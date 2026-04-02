@@ -1,0 +1,27 @@
+---
+- name: Manage DNS records via Cloudflare
+  ansible.builtin.import_tasks: cloudflare.yml
+  when:
+    - xmpp_stack_manage_dns
+    - xmpp_stack_dns_provider == "cloudflare"
+  tags:
+    - dns
+    - cloudflare
+
+- name: Reg.ru backend placeholder
+  ansible.builtin.import_tasks: regru.yml
+  when:
+    - xmpp_stack_manage_dns
+    - xmpp_stack_dns_provider == "regru"
+  tags:
+    - dns
+    - regru
+
+- name: Fail on unsupported DNS provider
+  ansible.builtin.fail:
+    msg: "Unsupported xmpp_stack_dns_provider={{ xmpp_stack_dns_provider }}. Supported values: cloudflare, regru."
+  when:
+    - xmpp_stack_manage_dns
+    - xmpp_stack_dns_provider not in ["cloudflare", "regru"]
+  tags:
+    - dns

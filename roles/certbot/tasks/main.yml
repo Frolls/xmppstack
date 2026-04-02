@@ -1,0 +1,21 @@
+---
+- name: Configure certbot assets
+  ansible.builtin.import_tasks: config.yml
+  tags:
+    - config
+    - certificates
+    - certbot
+
+- name: Bootstrap certificates when needed
+  ansible.builtin.import_tasks: bootstrap.yml
+  tags:
+    - bootstrap
+    - certificates
+    - certbot
+
+- name: Ensure certbot renewal timer is enabled and started
+  ansible.builtin.import_tasks: service.yml
+  tags:
+    - services
+    - certificates
+    - certbot

@@ -1,0 +1,114 @@
+---
+argument_specs:
+  main:
+    short_description: ejabberd configuration, image build, and service role.
+    options:
+      xmpp_stack_ejabberd_image:
+        type: str
+        description:
+          - Local ejabberd image tag or reference.
+      xmpp_stack_build_images:
+        type: bool
+        description:
+          - Rebuild the local ejabberd image when inputs change.
+      xmpp_stack_domain:
+        type: str
+        required: true
+        description:
+          - Primary XMPP domain served by ejabberd.
+      xmpp_stack_upload_host:
+        type: str
+        required: true
+        description:
+          - Hostname used for HTTP upload URLs.
+      xmpp_stack_admin_jid:
+        type: str
+        required: true
+        description:
+          - Administrative JID used in ejabberd ACLs.
+      xmpp_stack_log_level:
+        type: int
+        description:
+          - ejabberd log verbosity level.
+      xmpp_stack_c2s_port:
+        type: int
+        description:
+          - XMPP client-to-server listener port.
+      xmpp_stack_s2s_port:
+        type: int
+        description:
+          - XMPP server-to-server listener port.
+      xmpp_stack_ejabberd_http_port:
+        type: int
+        description:
+          - Internal ejabberd HTTP/WebSocket/upload port.
+      xmpp_stack_enable_federation:
+        type: bool
+        description:
+          - Enable XMPP federation and s2s-related listeners/modules.
+      xmpp_stack_enable_invites:
+        type: bool
+        description:
+          - Enable invite-based onboarding through mod_invites.
+      xmpp_stack_invites_landing_page:
+        type: str
+        description:
+          - Landing-page mode passed to mod_invites.
+      xmpp_stack_invites_max:
+        type: int
+        description:
+          - Maximum number of active invites available per user.
+      xmpp_stack_invites_token_expire_seconds:
+        type: int
+        description:
+          - Invite token lifetime in seconds.
+      xmpp_stack_c2s_shaper_rate:
+        type: int
+        description:
+          - Default ejabberd c2s shaper rate.
+      xmpp_stack_s2s_shaper_rate:
+        type: int
+        description:
+          - Default ejabberd s2s shaper rate.
+      xmpp_stack_max_user_sessions:
+        type: int
+        description:
+          - Maximum simultaneous ejabberd sessions per user.
+      xmpp_stack_max_user_offline_messages:
+        type: int
+        description:
+          - Maximum queued offline messages per user.
+      xmpp_stack_postgres_db:
+        type: str
+        required: true
+        description:
+          - PostgreSQL database name used by ejabberd.
+      xmpp_stack_postgres_user:
+        type: str
+        required: true
+        description:
+          - PostgreSQL user used by ejabberd.
+      xmpp_stack_postgres_password:
+        type: str
+        required: true
+        description:
+          - PostgreSQL password used by ejabberd.
+      xmpp_stack_turn_realm:
+        type: str
+        description:
+          - TURN realm used when advertising external services.
+      xmpp_stack_app_root:
+        type: str
+        required: true
+        description:
+          - Runtime root where the rendered ejabberd config is stored.
+      xmpp_stack_upload_dir:
+        type: str
+        required: true
+        description:
+          - Host path mounted for HTTP upload storage.
+      xmpp_stack_letsencrypt_dir:
+        type: str
+        required: true
+        description:
+          - Host path where TLS certificates are mounted from.

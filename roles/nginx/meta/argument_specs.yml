@@ -1,0 +1,41 @@
+---
+argument_specs:
+  main:
+    short_description: nginx reverse proxy role for ejabberd HTTP endpoints.
+    options:
+      xmpp_stack_nginx_image:
+        type: str
+        description:
+          - nginx container image reference.
+      xmpp_stack_domain:
+        type: str
+        required: true
+        description:
+          - Primary XMPP domain served over HTTPS and WebSocket.
+      xmpp_stack_upload_host:
+        type: str
+        required: true
+        description:
+          - Upload hostname routed to ejabberd through nginx.
+      xmpp_stack_http_port:
+        type: int
+        description:
+          - Public HTTP port exposed by nginx.
+      xmpp_stack_https_port:
+        type: int
+        description:
+          - Public HTTPS port exposed by nginx.
+      xmpp_stack_ejabberd_http_port:
+        type: int
+        description:
+          - Internal ejabberd HTTP/WebSocket/upload port that nginx proxies to.
+      xmpp_stack_app_root:
+        type: str
+        required: true
+        description:
+          - Runtime root where the rendered nginx config is stored.
+      xmpp_stack_letsencrypt_dir:
+        type: str
+        required: true
+        description:
+          - Host path where TLS certificates are mounted from.

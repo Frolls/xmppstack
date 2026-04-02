@@ -1,0 +1,290 @@
+---
+argument_specs:
+  main:
+    short_description: Shared host preparation and common variables for the XMPP stack.
+    options:
+      xmpp_stack_packages:
+        type: list
+        elements: str
+        description:
+          - Host packages installed by the common role.
+      xmpp_stack_app_root:
+        type: str
+        description:
+          - Runtime root for rendered configs, scripts, and build contexts.
+      xmpp_stack_data_root:
+        type: str
+        description:
+          - Base directory for persistent application data.
+      xmpp_stack_postgres_data_dir:
+        type: str
+        description:
+          - Persistent PostgreSQL data directory on the target host.
+      xmpp_stack_upload_dir:
+        type: str
+        description:
+          - Persistent ejabberd HTTP upload directory.
+      xmpp_stack_letsencrypt_dir:
+        type: str
+        description:
+          - Persistent Let's Encrypt storage directory.
+      xmpp_stack_backups_dir:
+        type: str
+        description:
+          - Destination directory for operational backup scripts.
+      xmpp_stack_domain:
+        type: str
+        required: true
+        description:
+          - Primary XMPP domain for the stack.
+      xmpp_stack_upload_host:
+        type: str
+        required: true
+        description:
+          - Hostname used for ejabberd HTTP upload.
+      xmpp_stack_conference_host:
+        type: str
+        required: true
+        description:
+          - Hostname used for MUC conference service.
+      xmpp_stack_public_ip:
+        type: str
+        required: true
+        description:
+          - Public IPv4 address advertised by TURN and used in DNS.
+      xmpp_stack_public_ipv6:
+        type: str
+        description:
+          - Optional public IPv6 address used for AAAA records.
+      xmpp_stack_http_port:
+        type: int
+        description:
+          - Public HTTP port exposed by nginx.
+      xmpp_stack_https_port:
+        type: int
+        description:
+          - Public HTTPS port exposed by nginx.
+      xmpp_stack_c2s_port:
+        type: int
+        description:
+          - XMPP client-to-server port.
+      xmpp_stack_s2s_port:
+        type: int
+        description:
+          - XMPP server-to-server port.
+      xmpp_stack_ejabberd_http_port:
+        type: int
+        description:
+          - Internal ejabberd HTTP/WebSocket/upload port.
+      xmpp_stack_turn_port:
+        type: int
+        description:
+          - TURN/STUN listener port for TCP and UDP.
+      xmpp_stack_turn_tls_port:
+        type: int
+        description:
+          - TURN over TLS listener port.
+      xmpp_stack_turn_relay_min_port:
+        type: int
+        description:
+          - Start of the TURN relay UDP port range.
+      xmpp_stack_turn_relay_max_port:
+        type: int
+        description:
+          - End of the TURN relay UDP port range.
+      xmpp_stack_firewall_enabled:
+        type: bool
+        description:
+          - Enable host-level firewall management through nftables.
+      xmpp_stack_firewall_ssh_port:
+        type: int
+        description:
+          - SSH port that must remain reachable through the firewall.
+      xmpp_stack_firewall_ssh_allowed_ipv4:
+        type: list
+        elements: str
+        description:
+          - Optional IPv4 CIDR allowlist for SSH access.
+      xmpp_stack_firewall_ssh_allowed_ipv6:
+        type: list
+        elements: str
+        description:
+          - Optional IPv6 CIDR allowlist for SSH access.
+      xmpp_stack_firewall_additional_tcp_ports:
+        type: list
+        elements: int
+        description:
+          - Additional TCP ports allowed through the firewall.
+      xmpp_stack_firewall_additional_udp_ports:
+        type: list
+        elements: int
+        description:
+          - Additional UDP ports allowed through the firewall.
+      xmpp_stack_secrets:
+        type: dict
+        description:
+          - Vault-loaded secret dictionary for shared stack secrets.
+      xmpp_stack_dns_secrets:
+        type: dict
+        description:
+          - Vault-loaded secret dictionary used by the DNS role.
+      xmpp_stack_postgres_db:
+        type: str
+        description:
+          - PostgreSQL database name used by ejabberd.
+      xmpp_stack_postgres_user:
+        type: str
+        description:
+          - PostgreSQL user used by ejabberd.
+      xmpp_stack_postgres_password:
+        type: str
+        required: true
+        description:
+          - PostgreSQL password used by ejabberd.
+      xmpp_stack_admin_jid:
+        type: str
+        required: true
+        description:
+          - Administrative JID used by ejabberd ACLs.
+      xmpp_stack_turn_realm:
+        type: str
+        description:
+          - TURN realm advertised by coturn.
+      xmpp_stack_turn_static_auth_secret:
+        type: str
+        required: true
+        description:
+          - Shared secret used for TURN REST authentication.
+      xmpp_stack_certbot_email:
+        type: str
+        required: true
+        description:
+          - Contact email for Let's Encrypt.
+      xmpp_stack_certbot_domains:
+        type: list
+        elements: str
+        required: true
+        description:
+          - Domain names that should be covered by the TLS certificate.
+      xmpp_stack_certbot_renew_schedule:
+        type: str
+        description:
+          - systemd timer schedule for certificate renewals.
+      xmpp_stack_manage_dns:
+        type: bool
+        description:
+          - Enable provider-backed DNS automation.
+      xmpp_stack_dns_provider:
+        type: str
+        choices:
+          - cloudflare
+          - regru
+        description:
+          - DNS provider backend used by the DNS role.
+      xmpp_stack_dns_zone:
+        type: str
+        description:
+          - Authoritative DNS zone managed by the DNS role.
+      xmpp_stack_dns_regru_api_endpoint:
+        type: str
+        description:
+          - Base URL for the Reg.ru REG.API 2 backend.
+      xmpp_stack_dns_ttl:
+        type: int
+        description:
+          - Default TTL used for managed DNS records.
+      xmpp_stack_dns_proxied:
+        type: bool
+        description:
+          - Cloudflare proxy flag for supported records.
+      xmpp_stack_dns_manage_srv:
+        type: bool
+        description:
+          - Enable management of SRV DNS records.
+      xmpp_stack_dns_manage_txt:
+        type: bool
+        description:
+          - Enable management of TXT DNS records such as _xmppconnect.
+      xmpp_stack_websocket_url:
+        type: str
+        description:
+          - WebSocket URL published in _xmppconnect TXT discovery.
+      xmpp_stack_dns_records:
+        type: list
+        elements: dict
+        description:
+          - Declarative list of standard DNS records to manage.
+      xmpp_stack_dns_srv_records:
+        type: list
+        elements: dict
+        description:
+          - Declarative list of SRV DNS records to manage.
+      xmpp_stack_dns_txt_records:
+        type: list
+        elements: dict
+        description:
+          - Declarative list of TXT DNS records to manage.
+      xmpp_stack_log_level:
+        type: int
+        description:
+          - ejabberd log verbosity level.
+      xmpp_stack_enable_federation:
+        type: bool
+        description:
+          - Enable XMPP federation and expose the s2s listener.
+      xmpp_stack_enable_invites:
+        type: bool
+        description:
+          - Enable ejabberd invite-based onboarding through mod_invites.
+      xmpp_stack_invites_landing_page:
+        type: str
+        description:
+          - Landing-page mode passed to ejabberd mod_invites.
+      xmpp_stack_invites_max:
+        type: int
+        description:
+          - Maximum number of active invites available per user.
+      xmpp_stack_invites_token_expire_seconds:
+        type: int
+        description:
+          - Invite token lifetime in seconds.
+      xmpp_stack_c2s_shaper_rate:
+        type: int
+        description:
+          - Default ejabberd client-to-server shaper rate.
+      xmpp_stack_s2s_shaper_rate:
+        type: int
+        description:
+          - Default ejabberd server-to-server shaper rate.
+      xmpp_stack_max_user_sessions:
+        type: int
+        description:
+          - Maximum simultaneous ejabberd sessions per user.
+      xmpp_stack_max_user_offline_messages:
+        type: int
+        description:
+          - Maximum queued offline messages per user.
+      xmpp_stack_issue_certificates:
+        type: bool
+        description:
+          - Allow initial certificate bootstrap through the certbot role.
+      xmpp_stack_build_images:
+        type: bool
+        description:
+          - Build local ejabberd and coturn images from rendered contexts.
+      xmpp_stack_postgres_image:
+        type: str
+        description:
+          - PostgreSQL container image reference.
+      xmpp_stack_nginx_image:
+        type: str
+        description:
+          - nginx container image reference.
+      xmpp_stack_ejabberd_image:
+        type: str
+        description:
+          - ejabberd container image reference.
+      xmpp_stack_coturn_image:
+        type: str
+        description:
+          - coturn container image reference.

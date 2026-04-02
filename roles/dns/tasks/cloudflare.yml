@@ -1,0 +1,57 @@
+---
+- name: Validate Cloudflare API token
+  ansible.builtin.assert:
+    that:
+      - xmpp_stack_dns_secrets.cloudflare_api_token is defined
+      - xmpp_stack_dns_secrets.cloudflare_api_token | length > 0
+    fail_msg: Set xmpp_stack_dns_secrets.cloudflare_api_token in vault before enabling Cloudflare DNS management.
+
+- name: Ensure standard Cloudflare DNS records
+  community.general.cloudflare_dns:
+    zone: "{{ xmpp_stack_dns_zone }}"
+    record: "{{ item.record }}"
+    type: "{{ item.type }}"
+    value: "{{ item.value }}"
+    ttl: "{{ item.ttl | default(xmpp_stack_dns_ttl) }}"
+    proxied: "{{ item.proxied | default(false) }}"
+    solo: "{{ item.solo | default(false) }}"
+    state: present
+    api_token: "{{ xmpp_stack_dns_secrets.cloudflare_api_token }}"
+  loop: "{{ xmpp_stack_dns_records }}"
+  loop_control:
+    label: "{{ item.type }} {{ item.record }}"
+  no_log: true
+
+- name: Ensure optional Cloudflare SRV records
+  community.general.cloudflare_dns:
+    zone: "{{ xmpp_stack_dns_zone }}"
+    type: SRV
+    service: "{{ item.service }}"
+    proto: "{{ item.proto }}"
+    port: "{{ item.port }}"
+    priority: "{{ item.priority | default(10) }}"
+    weight: "{{ item.weight | default(10) }}"
+    value: "{{ item.value }}"
+    ttl: "{{ item.ttl | default(xmpp_stack_dns_ttl) }}"
+    state: present
+    api_token: "{{ xmpp_stack_dns_secrets.cloudflare_api_token }}"
+  loop: "{{ xmpp_stack_dns_srv_records }}"
+  loop_control:
+    label: "_{{ item.service }}._{{ item.proto }}"
+  when: xmpp_stack_dns_manage_srv
+  no_log: true
+
+- name: Ensure optional Cloudflare TXT records
+  community.general.cloudflare_dns:
+    zone: "{{ xmpp_stack_dns_zone }}"
+    record: "{{ item.record }}"
+    type: TXT
+    value: "{{ item.value }}"
+    ttl: "{{ item.ttl | default(xmpp_stack_dns_ttl) }}"
+    state: present
+    api_token: "{{ xmpp_stack_dns_secrets.cloudflare_api_token }}"
+  loop: "{{ xmpp_stack_dns_txt_records }}"
+  loop_control:
+    label: "TXT {{ item.record }}"
+  when: xmpp_stack_dns_manage_txt
+  no_log: true

@@ -1,0 +1,37 @@
+---
+- name: Check whether first certificate already exists
+  ansible.builtin.stat:
+    path: "{{ xmpp_stack_letsencrypt_dir }}/live/{{ xmpp_stack_domain }}/fullchain.pem"
+  register: xmpp_stack_cert_stat
+
+- name: Determine whether certificate bootstrap is needed
+  ansible.builtin.set_fact:
+    xmpp_stack_bootstrap_needed: "{{ not xmpp_stack_cert_stat.stat.exists }}"
+
+- name: Fail if certificate is missing and bootstrap is disabled
+  ansible.builtin.fail:
+    msg: First certificate is missing and xmpp_stack_issue_certificates is disabled.
+  when:
+    - xmpp_stack_bootstrap_needed
+    - not xmpp_stack_issue_certificates
+
+- name: Start prerequisite services for certificate bootstrap
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    state: started
+  loop:
+    - xmpp-network-network.service
+    - postgres.service
+  when:
+    - xmpp_stack_bootstrap_needed
+    - xmpp_stack_issue_certificates
+
+- name: Bootstrap first certificate
+  ansible.builtin.command:
+    argv:
+      - "{{ xmpp_stack_app_root }}/scripts/certbot-bootstrap.sh"
+  when:
+    - xmpp_stack_bootstrap_needed
+    - xmpp_stack_issue_certificates
+    - not ansible_check_mode
+  changed_when: xmpp_stack_bootstrap_needed

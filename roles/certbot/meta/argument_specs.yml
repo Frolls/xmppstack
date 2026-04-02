@@ -1,0 +1,39 @@
+---
+argument_specs:
+  main:
+    short_description: Certificate bootstrap and renewal management role.
+    options:
+      xmpp_stack_issue_certificates:
+        type: bool
+        description:
+          - Allow the role to bootstrap the initial Let's Encrypt certificate.
+      xmpp_stack_certbot_email:
+        type: str
+        required: true
+        description:
+          - Contact email used for Let's Encrypt issuance.
+      xmpp_stack_certbot_domains:
+        type: list
+        elements: str
+        required: true
+        description:
+          - Domain names that should be covered by the issued certificate.
+      xmpp_stack_certbot_renew_schedule:
+        type: str
+        description:
+          - systemd timer schedule used for periodic certificate renewals.
+      xmpp_stack_domain:
+        type: str
+        required: true
+        description:
+          - Primary XMPP domain used to locate the certificate on disk.
+      xmpp_stack_app_root:
+        type: str
+        required: true
+        description:
+          - Runtime root where rendered renewal and bootstrap scripts are stored.
+      xmpp_stack_letsencrypt_dir:
+        type: str
+        required: true
+        description:
+          - Host path where Let's Encrypt state and certificates are stored.

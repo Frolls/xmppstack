@@ -1,0 +1,20 @@
+---
+- name: coturn reload systemd
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+  when: not ansible_check_mode
+
+- name: coturn check certificate presence
+  ansible.builtin.stat:
+    path: "{{ xmpp_stack_letsencrypt_dir }}/live/{{ xmpp_stack_domain }}/fullchain.pem"
+  register: xmpp_stack_coturn_handler_cert_stat
+  listen: coturn restart service
+
+- name: coturn restart service if certificate exists
+  ansible.builtin.systemd_service:
+    name: coturn.service
+    state: restarted
+  when:
+    - not ansible_check_mode
+    - xmpp_stack_coturn_handler_cert_stat.stat.exists
+  listen: coturn restart service

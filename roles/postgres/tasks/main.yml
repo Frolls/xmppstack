@@ -1,0 +1,12 @@
+---
+- name: Configure postgres runtime
+  ansible.builtin.import_tasks: config.yml
+  tags:
+    - config
+    - postgres
+
+- name: Ensure postgres service is enabled and started
+  ansible.builtin.import_tasks: service.yml
+  tags:
+    - services
+    - postgres

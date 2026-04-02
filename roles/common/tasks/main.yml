@@ -1,0 +1,25 @@
+---
+- name: Validate variables
+  ansible.builtin.import_tasks: validate.yml
+  tags:
+    - always
+    - validate
+    - common
+
+- name: Install packages
+  ansible.builtin.import_tasks: packages.yml
+  tags:
+    - packages
+    - common
+
+- name: Create directories
+  ansible.builtin.import_tasks: directories.yml
+  tags:
+    - directories
+    - common
+
+- name: Render shared configuration
+  ansible.builtin.import_tasks: config.yml
+  tags:
+    - config
+    - common

@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+set -eu
+
+if [ $# -ne 1 ]; then
+  echo "Usage: $0 backup.sql"
+  exit 1
+fi
+
+podman exec -i postgres psql -U {{ xmpp_stack_postgres_user }} -d {{ xmpp_stack_postgres_db }} < "$1"

@@ -1,0 +1,14 @@
+---
+- name: Install postgres Quadlet file
+  ansible.builtin.template:
+    src: quadlet/postgres.container.j2
+    dest: /etc/containers/systemd/postgres.container
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - postgres reload systemd
+    - postgres restart service
+
+- name: Flush postgres handlers after config changes
+  ansible.builtin.meta: flush_handlers

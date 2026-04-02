@@ -1,0 +1,57 @@
+---
+- name: Read coturn Containerfile
+  ansible.builtin.slurp:
+    src: "{{ xmpp_stack_app_root }}/containers/coturn/Containerfile"
+  register: xmpp_stack_coturn_containerfile
+
+- name: Read coturn config
+  ansible.builtin.slurp:
+    src: "{{ xmpp_stack_app_root }}/containers/coturn/turnserver.conf"
+  register: xmpp_stack_coturn_config
+
+- name: Compute coturn build hash
+  ansible.builtin.set_fact:
+    xmpp_stack_coturn_build_hash: "{{ (xmpp_stack_coturn_containerfile.content ~ xmpp_stack_coturn_config.content) | hash('sha256') }}"
+
+- name: Check coturn build hash stamp
+  ansible.builtin.stat:
+    path: "{{ xmpp_stack_app_root }}/containers/coturn/.build-hash"
+  register: xmpp_stack_coturn_hash_stat
+
+- name: Read coturn build hash stamp
+  ansible.builtin.slurp:
+    src: "{{ xmpp_stack_app_root }}/containers/coturn/.build-hash"
+  register: xmpp_stack_coturn_hash_file
+  when: xmpp_stack_coturn_hash_stat.stat.exists
+
+- name: Determine whether coturn image rebuild is needed
+  ansible.builtin.set_fact:
+    xmpp_stack_coturn_needs_build: >-
+      {{
+        (not xmpp_stack_coturn_hash_stat.stat.exists) or
+        ((xmpp_stack_coturn_hash_file.content | default('') | b64decode | trim) != xmpp_stack_coturn_build_hash)
+      }}
+
+- name: Build coturn image
+  ansible.builtin.command:
+    argv:
+      - podman
+      - build
+      - -t
+      - "{{ xmpp_stack_coturn_image }}"
+      - "{{ xmpp_stack_app_root }}/containers/coturn"
+  when:
+    - xmpp_stack_coturn_needs_build
+    - not ansible_check_mode
+  changed_when: xmpp_stack_coturn_needs_build
+
+- name: Update coturn build hash stamp
+  ansible.builtin.copy:
+    dest: "{{ xmpp_stack_app_root }}/containers/coturn/.build-hash"
+    content: "{{ xmpp_stack_coturn_build_hash }}\n"
+    owner: root
+    group: root
+    mode: "0644"
+  when:
+    - xmpp_stack_coturn_needs_build
+    - not ansible_check_mode

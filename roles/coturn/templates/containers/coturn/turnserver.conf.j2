@@ -1,0 +1,18 @@
+realm={{ xmpp_stack_turn_realm }}
+server-name={{ xmpp_stack_domain }}
+fingerprint
+use-auth-secret
+static-auth-secret={{ xmpp_stack_turn_static_auth_secret }}
+listening-ip=0.0.0.0
+listening-ip=::
+external-ip={{ xmpp_stack_public_ip }}
+listening-port={{ xmpp_stack_turn_port }}
+tls-listening-port={{ xmpp_stack_turn_tls_port }}
+min-port={{ xmpp_stack_turn_relay_min_port }}
+max-port={{ xmpp_stack_turn_relay_max_port }}
+no-cli
+no-multicast-peers
+cert=/etc/letsencrypt/live/{{ xmpp_stack_domain }}/fullchain.pem
+pkey=/etc/letsencrypt/live/{{ xmpp_stack_domain }}/privkey.pem
+log-file=stdout
+simple-log

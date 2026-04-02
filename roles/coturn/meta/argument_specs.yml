@@ -1,0 +1,59 @@
+---
+argument_specs:
+  main:
+    short_description: coturn configuration, image build, and service role.
+    options:
+      xmpp_stack_coturn_image:
+        type: str
+        description:
+          - Local coturn image tag or reference.
+      xmpp_stack_build_images:
+        type: bool
+        description:
+          - Rebuild the local coturn image when inputs change.
+      xmpp_stack_domain:
+        type: str
+        required: true
+        description:
+          - Primary XMPP domain used for TURN server naming.
+      xmpp_stack_public_ip:
+        type: str
+        required: true
+        description:
+          - Public IPv4 address announced by coturn.
+      xmpp_stack_turn_port:
+        type: int
+        description:
+          - TURN/STUN listener port for TCP and UDP.
+      xmpp_stack_turn_tls_port:
+        type: int
+        description:
+          - TURN over TLS listener port.
+      xmpp_stack_turn_relay_min_port:
+        type: int
+        description:
+          - Start of the TURN relay UDP range.
+      xmpp_stack_turn_relay_max_port:
+        type: int
+        description:
+          - End of the TURN relay UDP range.
+      xmpp_stack_turn_realm:
+        type: str
+        required: true
+        description:
+          - TURN realm used by clients and authentication.
+      xmpp_stack_turn_static_auth_secret:
+        type: str
+        required: true
+        description:
+          - Shared secret used for TURN REST authentication.
+      xmpp_stack_app_root:
+        type: str
+        required: true
+        description:
+          - Runtime root where the rendered coturn config is stored.
+      xmpp_stack_letsencrypt_dir:
+        type: str
+        required: true
+        description:
+          - Host path where TLS certificates are mounted from.

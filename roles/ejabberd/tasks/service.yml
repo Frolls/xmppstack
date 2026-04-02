@@ -1,0 +1,16 @@
+---
+- name: Check whether certificate already exists for ejabberd
+  ansible.builtin.stat:
+    path: "{{ xmpp_stack_letsencrypt_dir }}/live/{{ xmpp_stack_domain }}/fullchain.pem"
+  register: xmpp_stack_ejabberd_cert_stat
+
+- name: Enable ejabberd service
+  ansible.builtin.systemd_service:
+    name: ejabberd.service
+    enabled: true
+
+- name: Start ejabberd service when certificates are available
+  ansible.builtin.systemd_service:
+    name: ejabberd.service
+    state: started
+  when: xmpp_stack_ejabberd_cert_stat.stat.exists

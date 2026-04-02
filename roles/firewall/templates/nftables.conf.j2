@@ -1,0 +1,46 @@
+#!/usr/sbin/nft -f
+
+flush ruleset
+
+table inet filter {
+  chain input {
+    type filter hook input priority 0;
+    policy drop;
+
+    ct state invalid drop
+    ct state { established, related } accept
+    iifname "lo" accept
+
+    ip protocol icmp accept
+    ip6 nexthdr ipv6-icmp accept
+
+{% if xmpp_stack_firewall_ssh_allowed_ipv4 | length > 0 %}
+{% for cidr in xmpp_stack_firewall_ssh_allowed_ipv4 %}
+    ip saddr {{ cidr }} tcp dport {{ xmpp_stack_firewall_ssh_port }} accept
+{% endfor %}
+{% else %}
+    ip saddr 0.0.0.0/0 tcp dport {{ xmpp_stack_firewall_ssh_port }} accept
+{% endif %}
+{% if xmpp_stack_firewall_ssh_allowed_ipv6 | length > 0 %}
+{% for cidr in xmpp_stack_firewall_ssh_allowed_ipv6 %}
+    ip6 saddr {{ cidr }} tcp dport {{ xmpp_stack_firewall_ssh_port }} accept
+{% endfor %}
+{% else %}
+    ip6 saddr ::/0 tcp dport {{ xmpp_stack_firewall_ssh_port }} accept
+{% endif %}
+
+    tcp dport { {{ xmpp_stack_http_port }}, {{ xmpp_stack_https_port }}, {{ xmpp_stack_c2s_port }}, {{ xmpp_stack_turn_port }}, {{ xmpp_stack_turn_tls_port }}{% if xmpp_stack_enable_federation %}, {{ xmpp_stack_s2s_port }}{% endif %}{% for port in xmpp_stack_firewall_additional_tcp_ports %}, {{ port }}{% endfor %} } accept
+    udp dport { {{ xmpp_stack_turn_port }}{% for port in xmpp_stack_firewall_additional_udp_ports %}, {{ port }}{% endfor %} } accept
+    udp dport {{ xmpp_stack_turn_relay_min_port }}-{{ xmpp_stack_turn_relay_max_port }} accept
+  }
+
+  chain forward {
+    type filter hook forward priority 0;
+    policy drop;
+  }
+
+  chain output {
+    type filter hook output priority 0;
+    policy accept;
+  }
+}

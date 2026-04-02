@@ -1,0 +1,12 @@
+---
+- name: Configure nginx runtime
+  ansible.builtin.import_tasks: config.yml
+  tags:
+    - config
+    - nginx
+
+- name: Ensure nginx service is enabled and conditionally started
+  ansible.builtin.import_tasks: service.yml
+  tags:
+    - services
+    - nginx

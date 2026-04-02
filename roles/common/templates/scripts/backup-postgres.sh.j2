@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+set -eu
+
+BACKUP_DIR="${BACKUP_DIR:-{{ xmpp_stack_backups_dir }}}"
+mkdir -p "$BACKUP_DIR"
+
+podman exec postgres pg_dump -U {{ xmpp_stack_postgres_user }} {{ xmpp_stack_postgres_db }} > "$BACKUP_DIR/ejabberd-$(date +%F).sql"

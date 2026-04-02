@@ -1,0 +1,10 @@
+[Unit]
+Description=Certbot renewal timer for XMPP stack
+
+[Timer]
+OnCalendar={{ xmpp_stack_certbot_renew_schedule }}
+RandomizedDelaySec=15m
+Persistent=true
+
+[Install]
+WantedBy=timers.target

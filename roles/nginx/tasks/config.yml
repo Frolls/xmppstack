@@ -1,0 +1,24 @@
+---
+- name: Render nginx runtime configuration
+  ansible.builtin.template:
+    src: containers/nginx/nginx.conf.j2
+    dest: "{{ xmpp_stack_app_root }}/containers/nginx/nginx.conf"
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - nginx restart service
+
+- name: Install nginx Quadlet file
+  ansible.builtin.template:
+    src: quadlet/nginx.container.j2
+    dest: /etc/containers/systemd/nginx.container
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - nginx reload systemd
+    - nginx restart service
+
+- name: Flush nginx handlers after config changes
+  ansible.builtin.meta: flush_handlers

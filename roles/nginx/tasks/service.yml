@@ -1,0 +1,16 @@
+---
+- name: Check whether certificate already exists for nginx
+  ansible.builtin.stat:
+    path: "{{ xmpp_stack_letsencrypt_dir }}/live/{{ xmpp_stack_domain }}/fullchain.pem"
+  register: xmpp_stack_nginx_cert_stat
+
+- name: Enable nginx service
+  ansible.builtin.systemd_service:
+    name: nginx.service
+    enabled: true
+
+- name: Start nginx service when certificates are available
+  ansible.builtin.systemd_service:
+    name: nginx.service
+    state: started
+  when: xmpp_stack_nginx_cert_stat.stat.exists

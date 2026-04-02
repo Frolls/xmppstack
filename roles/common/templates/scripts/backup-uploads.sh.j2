@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+set -eu
+
+BACKUP_DIR="${BACKUP_DIR:-{{ xmpp_stack_backups_dir }}}"
+mkdir -p "$BACKUP_DIR"
+
+tar -czf "$BACKUP_DIR/uploads-$(date +%F).tar.gz" {{ xmpp_stack_upload_dir }}

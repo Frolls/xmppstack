@@ -1,0 +1,28 @@
+---
+- name: Create application directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - "{{ xmpp_stack_app_root }}"
+    - "{{ xmpp_stack_app_root }}/containers"
+    - "{{ xmpp_stack_app_root }}/containers/ejabberd"
+    - "{{ xmpp_stack_app_root }}/containers/coturn"
+    - "{{ xmpp_stack_app_root }}/containers/nginx"
+    - "{{ xmpp_stack_app_root }}/scripts"
+    - "{{ xmpp_stack_app_root }}/systemd"
+    - "{{ xmpp_stack_postgres_data_dir }}"
+    - "{{ xmpp_stack_upload_dir }}"
+    - "{{ xmpp_stack_letsencrypt_dir }}"
+    - "{{ xmpp_stack_backups_dir }}"
+
+- name: Ensure Quadlet directory exists
+  ansible.builtin.file:
+    path: /etc/containers/systemd
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"

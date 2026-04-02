@@ -1,0 +1,63 @@
+---
+argument_specs:
+  main:
+    short_description: Optional DNS automation role for Cloudflare and Reg.ru.
+    options:
+      xmpp_stack_manage_dns:
+        type: bool
+        description:
+          - Enable or disable provider-backed DNS automation.
+      xmpp_stack_dns_provider:
+        type: str
+        choices:
+          - cloudflare
+          - regru
+        description:
+          - DNS provider backend used for record management.
+      xmpp_stack_dns_zone:
+        type: str
+        description:
+          - Authoritative DNS zone to manage.
+      xmpp_stack_dns_regru_api_endpoint:
+        type: str
+        description:
+          - Base URL for the Reg.ru API backend.
+      xmpp_stack_dns_ttl:
+        type: int
+        description:
+          - Default TTL applied to managed DNS records.
+      xmpp_stack_dns_proxied:
+        type: bool
+        description:
+          - Cloudflare proxy flag used for supported records.
+      xmpp_stack_dns_manage_srv:
+        type: bool
+        description:
+          - Enable management of SRV records.
+      xmpp_stack_dns_manage_txt:
+        type: bool
+        description:
+          - Enable management of TXT records such as _xmppconnect.
+      xmpp_stack_websocket_url:
+        type: str
+        description:
+          - WebSocket URL published via TXT discovery.
+      xmpp_stack_dns_records:
+        type: list
+        elements: dict
+        description:
+          - Declarative list of standard DNS records to manage.
+      xmpp_stack_dns_srv_records:
+        type: list
+        elements: dict
+        description:
+          - Declarative list of SRV records to manage.
+      xmpp_stack_dns_txt_records:
+        type: list
+        elements: dict
+        description:
+          - Declarative list of TXT records to manage.
+      xmpp_stack_dns_secrets:
+        type: dict
+        description:
+          - Secret dictionary containing provider API credentials.

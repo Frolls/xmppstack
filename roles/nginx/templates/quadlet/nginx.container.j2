@@ -1,0 +1,20 @@
+[Unit]
+Description=nginx for ejabberd HTTPS endpoints
+After=ejabberd.service
+Requires=ejabberd.service
+
+[Container]
+Image={{ xmpp_stack_nginx_image }}
+ContainerName=nginx
+Volume={{ xmpp_stack_app_root }}/containers/nginx/nginx.conf:/etc/nginx/nginx.conf:ro,Z
+Volume={{ xmpp_stack_letsencrypt_dir }}:/etc/letsencrypt:ro,Z
+PublishPort={{ xmpp_stack_http_port }}:{{ xmpp_stack_http_port }}
+PublishPort={{ xmpp_stack_https_port }}:{{ xmpp_stack_https_port }}
+Network=xmpp.network
+
+[Service]
+Restart=always
+TimeoutStartSec=120
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,57 @@
+---
+- name: Read ejabberd Containerfile
+  ansible.builtin.slurp:
+    src: "{{ xmpp_stack_app_root }}/containers/ejabberd/Containerfile"
+  register: xmpp_stack_ejabberd_containerfile
+
+- name: Read ejabberd config
+  ansible.builtin.slurp:
+    src: "{{ xmpp_stack_app_root }}/containers/ejabberd/ejabberd.yml"
+  register: xmpp_stack_ejabberd_config
+
+- name: Compute ejabberd build hash
+  ansible.builtin.set_fact:
+    xmpp_stack_ejabberd_build_hash: "{{ (xmpp_stack_ejabberd_containerfile.content ~ xmpp_stack_ejabberd_config.content) | hash('sha256') }}"
+
+- name: Check ejabberd build hash stamp
+  ansible.builtin.stat:
+    path: "{{ xmpp_stack_app_root }}/containers/ejabberd/.build-hash"
+  register: xmpp_stack_ejabberd_hash_stat
+
+- name: Read ejabberd build hash stamp
+  ansible.builtin.slurp:
+    src: "{{ xmpp_stack_app_root }}/containers/ejabberd/.build-hash"
+  register: xmpp_stack_ejabberd_hash_file
+  when: xmpp_stack_ejabberd_hash_stat.stat.exists
+
+- name: Determine whether ejabberd image rebuild is needed
+  ansible.builtin.set_fact:
+    xmpp_stack_ejabberd_needs_build: >-
+      {{
+        (not xmpp_stack_ejabberd_hash_stat.stat.exists) or
+        ((xmpp_stack_ejabberd_hash_file.content | default('') | b64decode | trim) != xmpp_stack_ejabberd_build_hash)
+      }}
+
+- name: Build ejabberd image
+  ansible.builtin.command:
+    argv:
+      - podman
+      - build
+      - -t
+      - "{{ xmpp_stack_ejabberd_image }}"
+      - "{{ xmpp_stack_app_root }}/containers/ejabberd"
+  when:
+    - xmpp_stack_ejabberd_needs_build
+    - not ansible_check_mode
+  changed_when: xmpp_stack_ejabberd_needs_build
+
+- name: Update ejabberd build hash stamp
+  ansible.builtin.copy:
+    dest: "{{ xmpp_stack_app_root }}/containers/ejabberd/.build-hash"
+    content: "{{ xmpp_stack_ejabberd_build_hash }}\n"
+    owner: root
+    group: root
+    mode: "0644"
+  when:
+    - xmpp_stack_ejabberd_needs_build
+    - not ansible_check_mode

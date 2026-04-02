@@ -1,0 +1,32 @@
+---
+- name: Render coturn container build context
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  loop:
+    - src: containers/coturn/Containerfile.j2
+      dest: "{{ xmpp_stack_app_root }}/containers/coturn/Containerfile"
+      mode: "0644"
+    - src: containers/coturn/turnserver.conf.j2
+      dest: "{{ xmpp_stack_app_root }}/containers/coturn/turnserver.conf"
+      mode: "0644"
+  no_log: true
+  notify:
+    - coturn restart service
+
+- name: Install coturn Quadlet file
+  ansible.builtin.template:
+    src: quadlet/coturn.container.j2
+    dest: /etc/containers/systemd/coturn.container
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - coturn reload systemd
+    - coturn restart service
+
+- name: Flush coturn handlers after config changes
+  ansible.builtin.meta: flush_handlers

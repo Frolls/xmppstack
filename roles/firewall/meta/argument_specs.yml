@@ -1,0 +1,69 @@
+---
+argument_specs:
+  main:
+    short_description: nftables-based host firewall role for the XMPP stack.
+    options:
+      xmpp_stack_firewall_enabled:
+        type: bool
+        description:
+          - Enable or disable nftables management on the host.
+      xmpp_stack_firewall_ssh_port:
+        type: int
+        description:
+          - SSH port that must remain reachable after firewall changes.
+      xmpp_stack_firewall_ssh_allowed_ipv4:
+        type: list
+        elements: str
+        description:
+          - Optional IPv4 CIDR allowlist for SSH access.
+      xmpp_stack_firewall_ssh_allowed_ipv6:
+        type: list
+        elements: str
+        description:
+          - Optional IPv6 CIDR allowlist for SSH access.
+      xmpp_stack_firewall_additional_tcp_ports:
+        type: list
+        elements: int
+        description:
+          - Extra TCP ports to allow beyond the stack defaults.
+      xmpp_stack_firewall_additional_udp_ports:
+        type: list
+        elements: int
+        description:
+          - Extra UDP ports to allow beyond the stack defaults.
+      xmpp_stack_http_port:
+        type: int
+        description:
+          - Public HTTP port exposed by nginx.
+      xmpp_stack_https_port:
+        type: int
+        description:
+          - Public HTTPS port exposed by nginx.
+      xmpp_stack_c2s_port:
+        type: int
+        description:
+          - XMPP client-to-server port.
+      xmpp_stack_s2s_port:
+        type: int
+        description:
+          - XMPP server-to-server port.
+      xmpp_stack_turn_port:
+        type: int
+        description:
+          - TURN/STUN TCP and UDP port.
+      xmpp_stack_turn_tls_port:
+        type: int
+        description:
+          - TURN over TLS port.
+      xmpp_stack_turn_relay_min_port:
+        type: int
+        description:
+          - Start of the TURN relay UDP range.
+      xmpp_stack_turn_relay_max_port:
+        type: int
+        description:
+          - End of the TURN relay UDP range.
+      xmpp_stack_enable_federation:
+        type: bool
+        description:
+          - Whether the firewall should expose the XMPP s2s port.
