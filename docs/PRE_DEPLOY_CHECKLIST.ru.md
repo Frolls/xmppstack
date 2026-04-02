@@ -13,6 +13,7 @@
 - `xmpp_stack_public_ip` это реальный публичный IPv4 сервера.
 - `xmpp_stack_public_ipv6` задан, если сервер доступен по IPv6.
 - `xmpp_stack_firewall_ssh_port` совпадает с реальным SSH-портом на сервере.
+- `xmpp_stack_enable_nginx` соответствует выбранной публичной HTTP-схеме.
 - `xmpp_stack_certbot_domains` включает все hostname, для которых нужен TLS.
 
 ## DNS
@@ -32,14 +33,15 @@
 - Публичные порты заранее понятны:
   - `22/tcp`
   - `80/tcp`
-  - `443/tcp`
+  - `443/tcp`, если `xmpp_stack_enable_nginx: true`
   - `5222/tcp`
   - `5269/tcp`, если включена federation
+  - `5443/tcp`, если `xmpp_stack_enable_nginx: false`
   - `3478/tcp,udp`
   - `5349/tcp`
   - `49152-49200/udp`
 - Внутренние порты не должны ожидаться снаружи:
-  - `5443/tcp`
+  - `5443/tcp`, если `xmpp_stack_enable_nginx: true`
   - порты PostgreSQL
 
 ## Сертификаты

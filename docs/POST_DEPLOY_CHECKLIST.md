@@ -7,7 +7,7 @@ Use this checklist right after the first successful deployment.
 - `postgres.service` is enabled and running.
 - `ejabberd.service` is enabled and running.
 - `coturn.service` is enabled and running.
-- `nginx.service` is enabled and running.
+- `nginx.service` is enabled and running when `xmpp_stack_enable_nginx: true`.
 - `nftables.service` is enabled and running.
 - `certbot-renew.timer` is enabled and active.
 
@@ -20,13 +20,14 @@ Use this checklist right after the first successful deployment.
 
 ## Network Checks
 
-- `80/tcp` redirects to HTTPS as expected.
-- `443/tcp` responds correctly.
+- `80/tcp` redirects to HTTPS as expected when `xmpp_stack_enable_nginx: true`.
+- `443/tcp` responds correctly when `xmpp_stack_enable_nginx: true`.
 - `5222/tcp` is reachable from an external network.
 - `5269/tcp` is reachable if federation is enabled.
+- `5443/tcp` is reachable from an external network when `xmpp_stack_enable_nginx: false`.
 - `3478/tcp,udp` and `5349/tcp` are reachable for TURN.
 - TURN relay UDP range is not blocked by provider-side firewalling.
-- `5443/tcp` is not exposed publicly unless you explicitly intended that.
+- `5443/tcp` is not exposed publicly when `xmpp_stack_enable_nginx: true`.
 
 ## XMPP Functionality
 

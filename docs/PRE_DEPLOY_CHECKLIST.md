@@ -13,6 +13,7 @@ to a new server.
 - `xmpp_stack_public_ip` is the real public IPv4 of the server.
 - `xmpp_stack_public_ipv6` is set if the host is reachable over IPv6.
 - `xmpp_stack_firewall_ssh_port` matches the real SSH port on the server.
+- `xmpp_stack_enable_nginx` matches the intended public HTTP topology.
 - `xmpp_stack_certbot_domains` includes every TLS hostname you expect to serve.
 
 ## DNS
@@ -32,14 +33,15 @@ to a new server.
 - Ports expected to be public are known:
   - `22/tcp`
   - `80/tcp`
-  - `443/tcp`
+  - `443/tcp` when `xmpp_stack_enable_nginx: true`
   - `5222/tcp`
   - `5269/tcp` when federation is enabled
+  - `5443/tcp` when `xmpp_stack_enable_nginx: false`
   - `3478/tcp,udp`
   - `5349/tcp`
   - `49152-49200/udp`
 - Internal-only ports are not expected to be public:
-  - `5443/tcp`
+  - `5443/tcp` when `xmpp_stack_enable_nginx: true`
   - PostgreSQL ports
 
 ## Certificates

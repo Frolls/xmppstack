@@ -9,7 +9,7 @@ Managed services:
 - `ejabberd` for XMPP, multi-device state, MUC, upload, push, and WebSocket
 - `postgres` for message archive and persistent server-side data
 - `coturn` for STUN/TURN and more reliable calls across NAT
-- `nginx` for HTTP/HTTPS entrypoints on `80/443`
+- optional `nginx` for HTTP/HTTPS entrypoints on `80/443`
 - `certbot` for initial certificate issuance and renewals
 - `firewall` for nftables-based host filtering
 - optional `dns` automation for provider-managed zones
@@ -37,7 +37,7 @@ roles with a clear execution order.
 - `roles/coturn/`
   coturn config, local image build, Quadlet, and service lifecycle.
 - `roles/nginx/`
-  nginx config, Quadlet, and service lifecycle.
+  Optional nginx config, Quadlet, and service lifecycle.
 - `roles/certbot/`
   certificate bootstrap, renewal scripts, and renewal timer.
 - `playbooks/`
@@ -58,7 +58,7 @@ The playbooks apply roles in this order:
 4. `postgres`
 5. `ejabberd`
 6. `coturn`
-7. `nginx`
+7. optional `nginx`
 8. `certbot`
 
 This order matters:
@@ -66,7 +66,7 @@ This order matters:
 - the firewall is applied before services start so exposed ports stay explicit
 - DNS should be in place before the first certificate bootstrap if you enable automated DNS management
 - `postgres` must be available before ejabberd starts
-- `ejabberd`, `coturn`, and `nginx` install their units before the first certificate bootstrap
+- `ejabberd`, `coturn`, and optional `nginx` install their units before the first certificate bootstrap
 - `certbot` issues the first certificate and then restarts TLS-dependent services
 
 ## Requirements
@@ -178,6 +178,8 @@ Operational toggles:
   Whether the optional DNS role should manage records.
 - `xmpp_stack_log_level`
   ejabberd log level.
+- `xmpp_stack_enable_nginx`
+  Enables the optional reverse-proxy layer on `80/443`.
 - `xmpp_stack_enable_federation`
   Enables the `5269/tcp` listener and ejabberd s2s modules.
 - `xmpp_stack_enable_invites`
@@ -200,6 +202,7 @@ DNS variables:
 - `xmpp_stack_dns_manage_srv`
 - `xmpp_stack_dns_manage_txt`
 - `xmpp_stack_websocket_url`
+- `xmpp_stack_http_upload_url`
 - `xmpp_stack_dns_records`
 - `xmpp_stack_dns_srv_records`
 - `xmpp_stack_dns_txt_records`
@@ -286,7 +289,7 @@ files change.
 TLS-dependent services are enabled before bootstrap but only started
 immediately when certificates already exist. On the first run, the certbot
 bootstrap script issues certificates and restarts `ejabberd`, `coturn`, and
-`nginx` afterwards.
+`nginx` afterwards when the proxy layer is enabled.
 
 ## DNS
 
@@ -316,11 +319,12 @@ See also:
 Commonly exposed ports:
 - `5222/tcp` for XMPP client-to-server
 - `5269/tcp` for XMPP server-to-server
-- `5443/tcp` for ejabberd HTTP upload and WebSocket backend
+- `5443/tcp` for ejabberd HTTP upload and WebSocket, public only when `nginx` is disabled
 - `3478/tcp,udp` for STUN/TURN
 - `5349/tcp` for TURN over TLS
 - `49152-49200/udp` for TURN relay
-- `80/tcp` and `443/tcp` for `nginx` and `certbot`
+- `80/tcp` for `certbot` standalone ACME
+- `443/tcp` for `nginx` when enabled
 
 ## Certificates
 
@@ -335,7 +339,7 @@ Renewals are handled through:
 - `certbot-renew.timer`
 
 During bootstrap or renewal, the proxy service may be stopped briefly so
-`certbot --standalone` can bind to port `80`.
+`certbot --standalone` can bind to port `80` when `nginx` is enabled.
 
 ## Operations
 

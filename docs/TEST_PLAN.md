@@ -10,22 +10,23 @@ test server before calling it production-ready.
 - Confirm `postgres.service` is active.
 - Confirm `ejabberd.service` is active.
 - Confirm `coturn.service` is active.
-- Confirm `nginx.service` is active.
+- Confirm `nginx.service` is active when `xmpp_stack_enable_nginx: true`.
 - Confirm `certbot-renew.timer` is active.
 
 ## 2. Public Port Validation
 
 From an external network, verify:
-- `80/tcp` answers and redirects to HTTPS.
-- `443/tcp` answers with a valid certificate.
+- `80/tcp` answers and redirects to HTTPS when `xmpp_stack_enable_nginx: true`.
+- `443/tcp` answers with a valid certificate when `xmpp_stack_enable_nginx: true`.
 - `5222/tcp` is reachable.
 - `5269/tcp` is reachable if federation is enabled.
+- `5443/tcp` answers with a valid certificate when `xmpp_stack_enable_nginx: false`.
 - `3478/tcp,udp` is reachable.
 - `5349/tcp` is reachable.
 - TURN relay UDP range is not blocked upstream.
 
 Also verify that:
-- `5443/tcp` is not publicly reachable unless intentionally exposed.
+- `5443/tcp` is not publicly reachable when `xmpp_stack_enable_nginx: true`.
 - PostgreSQL is not publicly reachable.
 
 ## 3. DNS Validation
@@ -93,7 +94,7 @@ Only if federation is enabled:
 ## 10. Failure Recovery
 
 - restart `ejabberd.service` and verify clients reconnect
-- restart `nginx.service` and verify HTTPS returns
+- restart `nginx.service` and verify HTTPS returns when `xmpp_stack_enable_nginx: true`
 - restart `coturn.service` and re-test calls
 - restart `postgres.service` and confirm ejabberd recovers
 - reboot the host and verify all required services come back automatically

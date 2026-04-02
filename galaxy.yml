@@ -4,7 +4,7 @@ version: 0.1.0
 readme: README.md
 authors:
   - Project Maintainers
-description: Deploy a private XMPP stack based on ejabberd, postgres, coturn, nginx, and certbot.
+description: Deploy a private XMPP stack based on ejabberd, postgres, coturn, optional nginx, and certbot.
 license:
   - MIT
 tags:

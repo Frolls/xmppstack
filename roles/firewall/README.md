@@ -22,7 +22,9 @@ Manages:
 
 - The role uses `nftables` and keeps allowed ports aligned with the shared
   stack variables from [common](../common/README.md).
-- `5443/tcp` is intentionally not exposed publicly because it is an internal
-  ejabberd HTTP port behind `nginx`.
+- When `xmpp_stack_enable_nginx: true`, `443/tcp` is exposed and `5443/tcp`
+  remains internal.
+- When `xmpp_stack_enable_nginx: false`, `5443/tcp` is exposed directly and
+  `443/tcp` is not required by this stack.
 - If you use a non-default SSH port, set `xmpp_stack_firewall_ssh_port` before
   applying the role.

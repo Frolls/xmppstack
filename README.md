@@ -5,7 +5,7 @@ deploying a private XMPP stack with:
 - `ejabberd`
 - `postgres`
 - `coturn`
-- `nginx`
+- optional `nginx`
 - `certbot`
 - `firewall`
 - optional `dns`

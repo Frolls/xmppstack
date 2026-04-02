@@ -7,7 +7,7 @@
 - `postgres.service` включён и запущен.
 - `ejabberd.service` включён и запущен.
 - `coturn.service` включён и запущен.
-- `nginx.service` включён и запущен.
+- `nginx.service` включён и запущен, если `xmpp_stack_enable_nginx: true`.
 - `nftables.service` включён и запущен.
 - `certbot-renew.timer` включён и активен.
 
@@ -20,13 +20,14 @@
 
 ## Проверка Сети
 
-- `80/tcp` корректно редиректит на HTTPS.
-- `443/tcp` отвечает корректно.
+- `80/tcp` корректно редиректит на HTTPS, если `xmpp_stack_enable_nginx: true`.
+- `443/tcp` отвечает корректно, если `xmpp_stack_enable_nginx: true`.
 - `5222/tcp` доступен из внешней сети.
 - `5269/tcp` доступен, если включена federation.
+- `5443/tcp` доступен из внешней сети, если `xmpp_stack_enable_nginx: false`.
 - `3478/tcp,udp` и `5349/tcp` доступны для TURN.
 - Диапазон TURN relay UDP не режется firewall'ом провайдера.
-- `5443/tcp` не торчит наружу, если вы не открывали его специально.
+- `5443/tcp` не торчит наружу, если `xmpp_stack_enable_nginx: true`.
 
 ## XMPP-Функциональность
 

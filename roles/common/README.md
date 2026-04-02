@@ -19,6 +19,7 @@ Shared host preparation for the XMPP stack:
 | `xmpp_stack_conference_host` | Conference hostname for MUC. |
 | `xmpp_stack_public_ip` | Public IP used by TURN. |
 | `xmpp_stack_public_ipv6` | Optional public IPv6 used for `AAAA` records. |
+| `xmpp_stack_enable_nginx` | Enables the optional `nginx` reverse-proxy layer. Default: `true`. |
 | `xmpp_stack_admin_jid` | Administrative JID. |
 | `xmpp_stack_certbot_email` | Contact email for Let's Encrypt. |
 | `xmpp_stack_certbot_domains` | Domains passed to certificate issuance. |
@@ -27,11 +28,11 @@ Shared host preparation for the XMPP stack:
 
 | Variable | Description |
 | --- | --- |
-| `xmpp_stack_http_port` | Public HTTP port for `nginx`. Default: `80`. |
-| `xmpp_stack_https_port` | Public HTTPS port for `nginx`. Default: `443`. |
+| `xmpp_stack_http_port` | Public HTTP port used for ACME and optional `nginx`. Default: `80`. |
+| `xmpp_stack_https_port` | Public HTTPS port for `nginx` when enabled. Default: `443`. |
 | `xmpp_stack_c2s_port` | XMPP client-to-server port. Default: `5222`. |
 | `xmpp_stack_s2s_port` | XMPP server-to-server port. Default: `5269`. |
-| `xmpp_stack_ejabberd_http_port` | Internal ejabberd HTTP/WebSocket/upload port. Default: `5443`. |
+| `xmpp_stack_ejabberd_http_port` | ejabberd HTTP/WebSocket/upload port. Public when `nginx` is disabled. Default: `5443`. |
 | `xmpp_stack_turn_port` | TURN/STUN TCP/UDP port. Default: `3478`. |
 | `xmpp_stack_turn_tls_port` | TURN over TLS port. Default: `5349`. |
 | `xmpp_stack_turn_relay_min_port` | TURN relay range start. Default: `49152`. |
@@ -95,6 +96,7 @@ Shared host preparation for the XMPP stack:
 | `xmpp_stack_dns_manage_srv` | Enables optional SRV record management. |
 | `xmpp_stack_dns_manage_txt` | Enables optional TXT record management. |
 | `xmpp_stack_websocket_url` | URL published in `_xmppconnect` for WebSocket discovery. |
+| `xmpp_stack_http_upload_url` | Public HTTP upload URL used by ejabberd. |
 | `xmpp_stack_dns_records` | Declarative list of DNS records to manage. |
 | `xmpp_stack_dns_srv_records` | Declarative list of SRV records to manage when enabled. |
 | `xmpp_stack_dns_txt_records` | Declarative list of TXT records to manage when enabled. |

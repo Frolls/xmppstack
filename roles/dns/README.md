@@ -20,7 +20,7 @@ Current status:
 | `xmpp_stack_dns_proxied` | Cloudflare proxy flag for the apex record. Use `false` for XMPP-related records unless you explicitly know otherwise. |
 | `xmpp_stack_dns_manage_srv` | Enables SRV record management. Default: `true`. |
 | `xmpp_stack_dns_manage_txt` | Enables TXT record management for `_xmppconnect`. Default: `true`. |
-| `xmpp_stack_websocket_url` | WebSocket URL published in `_xmppconnect`. Default: `wss://<domain>/ws`. |
+| `xmpp_stack_websocket_url` | WebSocket URL published in `_xmppconnect`. Defaults to `wss://<domain>/ws` with `nginx` and `wss://<domain>:5443/ws` without it. |
 | `xmpp_stack_dns_records` | Declarative list of A/AAAA/CNAME-like records to manage. |
 | `xmpp_stack_dns_srv_records` | Declarative list of SRV records to manage when enabled. |
 | `xmpp_stack_dns_txt_records` | Declarative list of TXT records to manage when enabled. |
@@ -44,6 +44,7 @@ Current status:
 - The default record set is an expanded XMPP profile: apex, `upload`,
   `conference`, `xmpp-client`, optional `xmpp-server`, TURN/STUN SRV, and
   `_xmppconnect` for WebSocket discovery.
+- `_xmppconnect` follows `xmpp_stack_websocket_url`, so its port changes automatically when `xmpp_stack_enable_nginx` is disabled.
 - If you use IPv6, set `xmpp_stack_public_ipv6` to generate `AAAA` records.
 - If federation or remote MUC access matters, include
   `xmpp_stack_conference_host` in `xmpp_stack_certbot_domains`.

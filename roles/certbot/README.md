@@ -20,6 +20,8 @@ Handles:
 
 - On first bootstrap this role starts only the minimal prerequisite services,
   requests the certificate, and then restarts TLS-dependent services.
+- If `xmpp_stack_enable_nginx: true`, helper scripts stop and restart
+  `nginx` around standalone ACME runs.
 - Renewals are handled through rendered `systemd` units rather than cron.
 - For the expanded DNS/XMPP profile, include at least the main domain,
   `upload` host, and usually the `conference` host in
