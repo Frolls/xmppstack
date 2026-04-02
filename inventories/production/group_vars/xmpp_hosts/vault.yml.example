@@ -1,0 +1,9 @@
+---
+xmpp_stack_secrets:
+  postgres_password: change-me
+  turn_static_auth_secret: change-me
+
+xmpp_stack_dns_secrets:
+  cloudflare_api_token: change-me
+  regru_username: change-me
+  regru_password: change-me

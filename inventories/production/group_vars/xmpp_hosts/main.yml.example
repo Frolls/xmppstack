@@ -1,0 +1,22 @@
+---
+xmpp_stack_domain: xmpp.example.org
+xmpp_stack_upload_host: "upload.{{ xmpp_stack_domain }}"
+xmpp_stack_conference_host: "conference.{{ xmpp_stack_domain }}"
+xmpp_stack_public_ip: 203.0.113.10
+# xmpp_stack_public_ipv6: "2001:db8::10"
+
+xmpp_stack_admin_jid: "admin@{{ xmpp_stack_domain }}"
+xmpp_stack_certbot_email: admin@example.org
+xmpp_stack_certbot_domains:
+  - "{{ xmpp_stack_domain }}"
+  - "{{ xmpp_stack_upload_host }}"
+  - "{{ xmpp_stack_conference_host }}"
+
+xmpp_stack_enable_federation: true
+xmpp_stack_enable_invites: true
+# xmpp_stack_firewall_ssh_port: 22
+xmpp_stack_manage_dns: false
+xmpp_stack_dns_provider: cloudflare
+xmpp_stack_dns_zone: "{{ xmpp_stack_domain }}"
+xmpp_stack_dns_manage_srv: true
+xmpp_stack_dns_manage_txt: true
