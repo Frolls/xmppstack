@@ -1,0 +1,15 @@
+---
+- name: Deploy XMPP stack
+  hosts: xmpp_hosts
+  become: true
+  vars:
+    xmpp_stack_issue_certificates: false
+  roles:
+    - role: common
+    - role: firewall
+    - role: dns
+    - role: postgres
+    - role: ejabberd
+    - role: coturn
+    - role: nginx
+    - role: certbot

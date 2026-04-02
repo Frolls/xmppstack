@@ -1,0 +1,45 @@
+stages:
+  - validate
+
+validate:
+  stage: validate
+  image: python:3.12
+  before_script:
+    - python -m pip install --upgrade pip
+    - python -m pip install "ansible-core>=2.15" ansible-lint
+    - ansible-galaxy collection install -r requirements.yml
+  script:
+    - test -f galaxy.yml
+    - test -f requirements.yml
+    - test -f .ansible-lint
+    - test -f playbooks/site.yml
+    - test -f playbooks/bootstrap.yml
+    - test -f playbooks/deploy.yml
+    - test -f roles/common/tasks/main.yml
+    - test -f roles/common/meta/main.yml
+    - test -f roles/common/meta/argument_specs.yml
+    - test -f roles/dns/tasks/main.yml
+    - test -f roles/dns/meta/main.yml
+    - test -f roles/dns/meta/argument_specs.yml
+    - test -f roles/firewall/tasks/main.yml
+    - test -f roles/firewall/meta/main.yml
+    - test -f roles/firewall/meta/argument_specs.yml
+    - test -f roles/postgres/tasks/main.yml
+    - test -f roles/postgres/meta/main.yml
+    - test -f roles/postgres/meta/argument_specs.yml
+    - test -f roles/ejabberd/tasks/main.yml
+    - test -f roles/ejabberd/meta/main.yml
+    - test -f roles/ejabberd/meta/argument_specs.yml
+    - test -f roles/coturn/tasks/main.yml
+    - test -f roles/coturn/meta/main.yml
+    - test -f roles/coturn/meta/argument_specs.yml
+    - test -f roles/nginx/tasks/main.yml
+    - test -f roles/nginx/meta/main.yml
+    - test -f roles/nginx/meta/argument_specs.yml
+    - test -f roles/certbot/tasks/main.yml
+    - test -f roles/certbot/meta/main.yml
+    - test -f roles/certbot/meta/argument_specs.yml
+    - ansible-playbook --syntax-check playbooks/bootstrap.yml -i inventories/production/hosts.yml -e @inventories/production/group_vars/xmpp_hosts/main.yml.example -e @inventories/production/group_vars/xmpp_hosts/vault.yml.example
+    - ansible-playbook --syntax-check playbooks/deploy.yml -i inventories/production/hosts.yml -e @inventories/production/group_vars/xmpp_hosts/main.yml.example -e @inventories/production/group_vars/xmpp_hosts/vault.yml.example
+    - ansible-playbook --syntax-check playbooks/site.yml -i inventories/production/hosts.yml -e @inventories/production/group_vars/xmpp_hosts/main.yml.example -e @inventories/production/group_vars/xmpp_hosts/vault.yml.example
+    - ansible-lint playbooks roles
