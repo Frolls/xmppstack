@@ -56,14 +56,18 @@ argument_specs:
         type: str
         description:
           - Optional public IPv6 address used for AAAA records.
+      xmpp_stack_enable_nginx:
+        type: bool
+        description:
+          - Enable nginx as the public HTTP/HTTPS reverse proxy in front of ejabberd.
       xmpp_stack_http_port:
         type: int
         description:
-          - Public HTTP port exposed by nginx.
+          - Public HTTP port used for ACME and optional nginx.
       xmpp_stack_https_port:
         type: int
         description:
-          - Public HTTPS port exposed by nginx.
+          - Public HTTPS port exposed by nginx when the proxy layer is enabled.
       xmpp_stack_c2s_port:
         type: int
         description:
@@ -75,7 +79,7 @@ argument_specs:
       xmpp_stack_ejabberd_http_port:
         type: int
         description:
-          - Internal ejabberd HTTP/WebSocket/upload port.
+          - ejabberd HTTP/WebSocket/upload port, public when nginx is disabled.
       xmpp_stack_turn_port:
         type: int
         description:
@@ -209,6 +213,10 @@ argument_specs:
         type: str
         description:
           - WebSocket URL published in _xmppconnect TXT discovery.
+      xmpp_stack_http_upload_url:
+        type: str
+        description:
+          - Public HTTP upload URL used by ejabberd for put/get endpoints.
       xmpp_stack_dns_records:
         type: list
         elements: dict

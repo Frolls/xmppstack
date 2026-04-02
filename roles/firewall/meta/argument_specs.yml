@@ -39,6 +39,10 @@ argument_specs:
         type: int
         description:
           - Public HTTPS port exposed by nginx.
+      xmpp_stack_ejabberd_http_port:
+        type: int
+        description:
+          - Public ejabberd HTTP/WebSocket/upload port when nginx is disabled.
       xmpp_stack_c2s_port:
         type: int
         description:
@@ -67,3 +71,7 @@ argument_specs:
         type: bool
         description:
           - Whether the firewall should expose the XMPP s2s port.
+      xmpp_stack_enable_nginx:
+        type: bool
+        description:
+          - Whether the firewall should expose nginx on HTTPS or ejabberd directly on its HTTP port.

@@ -42,6 +42,10 @@ argument_specs:
         type: int
         description:
           - Internal ejabberd HTTP/WebSocket/upload port.
+      xmpp_stack_enable_nginx:
+        type: bool
+        description:
+          - Whether ejabberd HTTP endpoints are exposed directly or through nginx.
       xmpp_stack_enable_federation:
         type: bool
         description:
@@ -97,6 +101,10 @@ argument_specs:
         type: str
         description:
           - TURN realm used when advertising external services.
+      xmpp_stack_http_upload_url:
+        type: str
+        description:
+          - Public HTTP upload URL advertised by ejabberd.
       xmpp_stack_app_root:
         type: str
         required: true

@@ -29,7 +29,7 @@ table inet filter {
     ip6 saddr ::/0 tcp dport {{ xmpp_stack_firewall_ssh_port }} accept
 {% endif %}
 
-    tcp dport { {{ xmpp_stack_http_port }}, {{ xmpp_stack_https_port }}, {{ xmpp_stack_c2s_port }}, {{ xmpp_stack_turn_port }}, {{ xmpp_stack_turn_tls_port }}{% if xmpp_stack_enable_federation %}, {{ xmpp_stack_s2s_port }}{% endif %}{% for port in xmpp_stack_firewall_additional_tcp_ports %}, {{ port }}{% endfor %} } accept
+    tcp dport { {{ xmpp_stack_http_port }}, {{ xmpp_stack_c2s_port }}, {{ xmpp_stack_turn_port }}, {{ xmpp_stack_turn_tls_port }}{% if xmpp_stack_enable_nginx %}, {{ xmpp_stack_https_port }}{% else %}, {{ xmpp_stack_ejabberd_http_port }}{% endif %}{% if xmpp_stack_enable_federation %}, {{ xmpp_stack_s2s_port }}{% endif %}{% for port in xmpp_stack_firewall_additional_tcp_ports %}, {{ port }}{% endfor %} } accept
     udp dport { {{ xmpp_stack_turn_port }}{% for port in xmpp_stack_firewall_additional_udp_ports %}, {{ port }}{% endfor %} } accept
     udp dport {{ xmpp_stack_turn_relay_min_port }}-{{ xmpp_stack_turn_relay_max_port }} accept
   }

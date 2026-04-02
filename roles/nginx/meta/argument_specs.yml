@@ -3,6 +3,10 @@ argument_specs:
   main:
     short_description: nginx reverse proxy role for ejabberd HTTP endpoints.
     options:
+      xmpp_stack_enable_nginx:
+        type: bool
+        description:
+          - Enable or disable this role from the playbook level.
       xmpp_stack_nginx_image:
         type: str
         description:
@@ -20,7 +24,7 @@ argument_specs:
       xmpp_stack_http_port:
         type: int
         description:
-          - Public HTTP port exposed by nginx.
+          - Public HTTP port exposed by nginx when the proxy layer is enabled.
       xmpp_stack_https_port:
         type: int
         description:

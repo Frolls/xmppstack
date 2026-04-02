@@ -3,7 +3,9 @@ set -eu
 
 mkdir -p {{ xmpp_stack_letsencrypt_dir }}
 
+{% if xmpp_stack_enable_nginx %}
 systemctl stop nginx.service || true
+{% endif %}
 podman run --rm \
   -p 80:80 \
   -v {{ xmpp_stack_letsencrypt_dir }}:/etc/letsencrypt:Z \
@@ -11,5 +13,9 @@ podman run --rm \
   renew \
   --standalone \
   --quiet
+{% if xmpp_stack_enable_nginx %}
 systemctl start nginx.service
 systemctl restart ejabberd.service coturn.service nginx.service
+{% else %}
+systemctl restart ejabberd.service coturn.service
+{% endif %}

@@ -14,6 +14,7 @@ xmpp_stack_certbot_domains:
 
 xmpp_stack_enable_federation: true
 xmpp_stack_enable_invites: true
+xmpp_stack_enable_nginx: true
 # xmpp_stack_firewall_ssh_port: 22
 xmpp_stack_manage_dns: false
 xmpp_stack_dns_provider: cloudflare

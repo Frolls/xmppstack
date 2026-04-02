@@ -22,7 +22,9 @@ for domain in $CERTBOT_DOMAINS; do
 done
 IFS="$OLD_IFS"
 
+{% if xmpp_stack_enable_nginx %}
 systemctl stop nginx.service || true
+{% endif %}
 podman run --rm \
   -p 80:80 \
   -v {{ xmpp_stack_letsencrypt_dir }}:/etc/letsencrypt:Z \
@@ -33,5 +35,9 @@ podman run --rm \
   --agree-tos \
   --email "$CERTBOT_EMAIL" \
   $DOMAINS_ARGS
+{% if xmpp_stack_enable_nginx %}
 systemctl start nginx.service
 systemctl restart ejabberd.service coturn.service nginx.service
+{% else %}
+systemctl restart ejabberd.service coturn.service
+{% endif %}

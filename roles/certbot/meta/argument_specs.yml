@@ -37,3 +37,7 @@ argument_specs:
         required: true
         description:
           - Host path where Let's Encrypt state and certificates are stored.
+      xmpp_stack_enable_nginx:
+        type: bool
+        description:
+          - Whether the helper scripts should stop and restart nginx during standalone ACME runs.

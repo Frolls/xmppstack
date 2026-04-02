@@ -13,6 +13,9 @@ PublishPort={{ xmpp_stack_c2s_port }}:{{ xmpp_stack_c2s_port }}
 {% if xmpp_stack_enable_federation %}
 PublishPort={{ xmpp_stack_s2s_port }}:{{ xmpp_stack_s2s_port }}
 {% endif %}
+{% if not xmpp_stack_enable_nginx %}
+PublishPort={{ xmpp_stack_ejabberd_http_port }}:{{ xmpp_stack_ejabberd_http_port }}
+{% endif %}
 Network=xmpp.network
 
 [Service]

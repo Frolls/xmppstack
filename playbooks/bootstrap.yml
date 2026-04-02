@@ -12,4 +12,5 @@
     - role: ejabberd
     - role: coturn
     - role: nginx
+      when: xmpp_stack_enable_nginx | bool
     - role: certbot

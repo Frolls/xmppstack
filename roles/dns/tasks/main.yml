@@ -8,7 +8,7 @@
     - dns
     - cloudflare
 
-- name: Reg.ru backend placeholder
+- name: Manage DNS records via Reg.ru
   ansible.builtin.import_tasks: regru.yml
   when:
     - xmpp_stack_manage_dns

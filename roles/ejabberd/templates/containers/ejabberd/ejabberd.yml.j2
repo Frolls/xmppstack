@@ -144,6 +144,10 @@ listen:
     port: {{ xmpp_stack_ejabberd_http_port }}
     ip: "::"
     module: ejabberd_http
+{% if not xmpp_stack_enable_nginx %}
+    tls: true
+    protocol_options: 'TLS_OPTIONS'
+{% endif %}
     request_handlers:
       "/upload": mod_http_upload
       "/ws": ejabberd_http_ws
@@ -166,8 +170,8 @@ modules:
     access: http_upload
     max_size: 52428800
     docroot: "/var/lib/ejabberd/upload"
-    put_url: "https://{{ xmpp_stack_upload_host }}/upload"
-    get_url: "https://{{ xmpp_stack_upload_host }}/upload"
+    put_url: "{{ xmpp_stack_http_upload_url }}"
+    get_url: "{{ xmpp_stack_http_upload_url }}"
     thumbnail: false
     jid_in_url: sha1
   mod_http_upload_quota:
