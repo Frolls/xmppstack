@@ -1,0 +1,17 @@
+namespace: xmppstack
+name: xmpp_stack
+version: 0.1.0
+readme: README.md
+authors:
+  - Project Maintainers
+description: Deploy a private XMPP stack based on ejabberd, postgres, coturn, nginx, and certbot.
+license:
+  - MIT
+tags:
+  - xmpp
+  - ejabberd
+  - podman
+  - nginx
+  - certbot
+dependencies:
+  community.general: ">=8.0.0"
