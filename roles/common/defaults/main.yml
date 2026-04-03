@@ -4,10 +4,13 @@ xmpp_stack_packages:
 
 xmpp_stack_app_root: /opt/xmpp-infra
 xmpp_stack_data_root: /srv/xmpp
+xmpp_stack_podman_network_subnet: 10.89.0.0/24
+xmpp_stack_podman_network_gateway: 10.89.0.1
 xmpp_stack_postgres_data_dir: "{{ xmpp_stack_data_root }}/postgres"
 xmpp_stack_upload_dir: "{{ xmpp_stack_data_root }}/ejabberd/upload"
 xmpp_stack_letsencrypt_dir: "{{ xmpp_stack_data_root }}/letsencrypt"
 xmpp_stack_backups_dir: "{{ xmpp_stack_data_root }}/backups"
+xmpp_stack_ejabberd_certs_dir: "{{ xmpp_stack_app_root }}/certs/ejabberd"
 
 xmpp_stack_domain: ""
 xmpp_stack_upload_host: ""
@@ -38,6 +41,9 @@ xmpp_stack_secrets: {}
 xmpp_stack_postgres_db: ejabberd
 xmpp_stack_postgres_user: ejabberd
 xmpp_stack_postgres_password: "{{ xmpp_stack_secrets.postgres_password | default('') }}"
+xmpp_stack_postgres_host: 127.0.0.1
+xmpp_stack_postgres_port: 5432
+xmpp_stack_ejabberd_internal_host: 127.0.0.1
 
 xmpp_stack_admin_jid: ""
 xmpp_stack_turn_realm: "{{ xmpp_stack_domain }}"
@@ -56,6 +62,15 @@ xmpp_stack_dns_ttl: 300
 xmpp_stack_dns_proxied: false
 xmpp_stack_dns_manage_srv: true
 xmpp_stack_dns_manage_txt: true
+xmpp_stack_dns_record_base: >-
+  {{
+    '@'
+    if xmpp_stack_domain == xmpp_stack_dns_zone
+    else (
+      xmpp_stack_domain
+      | regex_replace('\\.' ~ xmpp_stack_dns_zone ~ '$', '')
+    )
+  }}
 xmpp_stack_websocket_url: >-
   {{
     'wss://' ~ xmpp_stack_domain
@@ -80,21 +95,29 @@ xmpp_stack_dns_records: >-
   {{
     [
       {
-        'record': '@',
+        'record': xmpp_stack_dns_record_base,
         'type': 'A',
         'value': xmpp_stack_public_ip,
         'proxied': xmpp_stack_dns_proxied,
         'ttl': xmpp_stack_dns_ttl
       },
       {
-        'record': xmpp_stack_upload_host | regex_replace('\\.' ~ xmpp_stack_dns_zone ~ '$', ''),
+        'record': (
+          'upload'
+          if xmpp_stack_dns_record_base == '@'
+          else 'upload.' ~ xmpp_stack_dns_record_base
+        ),
         'type': 'A',
         'value': xmpp_stack_public_ip,
         'proxied': false,
         'ttl': xmpp_stack_dns_ttl
       },
       {
-        'record': xmpp_stack_conference_host | regex_replace('\\.' ~ xmpp_stack_dns_zone ~ '$', ''),
+        'record': (
+          'conference'
+          if xmpp_stack_dns_record_base == '@'
+          else 'conference.' ~ xmpp_stack_dns_record_base
+        ),
         'type': 'A',
         'value': xmpp_stack_public_ip,
         'proxied': false,
@@ -104,19 +127,27 @@ xmpp_stack_dns_records: >-
     + (
       [
         {
-          'record': '@',
+          'record': xmpp_stack_dns_record_base,
           'type': 'AAAA',
           'value': xmpp_stack_public_ipv6,
           'ttl': xmpp_stack_dns_ttl
         },
         {
-          'record': xmpp_stack_upload_host | regex_replace('\\.' ~ xmpp_stack_dns_zone ~ '$', ''),
+          'record': (
+            'upload'
+            if xmpp_stack_dns_record_base == '@'
+            else 'upload.' ~ xmpp_stack_dns_record_base
+          ),
           'type': 'AAAA',
           'value': xmpp_stack_public_ipv6,
           'ttl': xmpp_stack_dns_ttl
         },
         {
-          'record': xmpp_stack_conference_host | regex_replace('\\.' ~ xmpp_stack_dns_zone ~ '$', ''),
+          'record': (
+            'conference'
+            if xmpp_stack_dns_record_base == '@'
+            else 'conference.' ~ xmpp_stack_dns_record_base
+          ),
           'type': 'AAAA',
           'value': xmpp_stack_public_ipv6,
           'ttl': xmpp_stack_dns_ttl
@@ -130,6 +161,7 @@ xmpp_stack_dns_srv_records: >-
   {{
     [
       {
+        'record': xmpp_stack_dns_record_base,
         'service': 'xmpp-client',
         'proto': 'tcp',
         'port': xmpp_stack_c2s_port,
@@ -141,6 +173,7 @@ xmpp_stack_dns_srv_records: >-
     + (
       [
         {
+          'record': xmpp_stack_dns_record_base,
           'service': 'xmpp-server',
           'proto': 'tcp',
           'port': xmpp_stack_s2s_port,
@@ -154,6 +187,7 @@ xmpp_stack_dns_srv_records: >-
     )
     + [
       {
+        'record': xmpp_stack_dns_record_base,
         'service': 'turn',
         'proto': 'udp',
         'port': xmpp_stack_turn_port,
@@ -162,6 +196,7 @@ xmpp_stack_dns_srv_records: >-
         'value': xmpp_stack_domain
       },
       {
+        'record': xmpp_stack_dns_record_base,
         'service': 'turn',
         'proto': 'tcp',
         'port': xmpp_stack_turn_port,
@@ -170,6 +205,7 @@ xmpp_stack_dns_srv_records: >-
         'value': xmpp_stack_domain
       },
       {
+        'record': xmpp_stack_dns_record_base,
         'service': 'turns',
         'proto': 'tcp',
         'port': xmpp_stack_turn_tls_port,
@@ -178,6 +214,7 @@ xmpp_stack_dns_srv_records: >-
         'value': xmpp_stack_domain
       },
       {
+        'record': xmpp_stack_dns_record_base,
         'service': 'stun',
         'proto': 'udp',
         'port': xmpp_stack_turn_port,
@@ -186,6 +223,7 @@ xmpp_stack_dns_srv_records: >-
         'value': xmpp_stack_domain
       },
       {
+        'record': xmpp_stack_dns_record_base,
         'service': 'stun',
         'proto': 'tcp',
         'port': xmpp_stack_turn_port,
@@ -194,6 +232,7 @@ xmpp_stack_dns_srv_records: >-
         'value': xmpp_stack_domain
       },
       {
+        'record': xmpp_stack_dns_record_base,
         'service': 'stuns',
         'proto': 'tcp',
         'port': xmpp_stack_turn_tls_port,
@@ -204,10 +243,16 @@ xmpp_stack_dns_srv_records: >-
     ]
   }}
 xmpp_stack_dns_txt_records:
-  - record: "_xmppconnect"
+  - record: >-
+      {{
+        '_xmppconnect'
+        if xmpp_stack_dns_record_base == '@'
+        else '_xmppconnect.' ~ xmpp_stack_dns_record_base
+      }}
     value: "_xmpp-client-websocket={{ xmpp_stack_websocket_url }}"
     ttl: "{{ xmpp_stack_dns_ttl }}"
 
+xmpp_stack_http_upload_max_size: 52428800
 xmpp_stack_log_level: 3
 xmpp_stack_enable_federation: true
 xmpp_stack_enable_invites: true

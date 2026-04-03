@@ -1,21 +1,45 @@
 #!/usr/bin/env sh
 set -eu
 
+RENEWED_MARKER="{{ xmpp_stack_letsencrypt_dir }}/.xmppstack-renewed"
+NGINX_STOPPED=0
+
+restore_nginx() {
+  if [ "$NGINX_STOPPED" -eq 1 ]; then
+    systemctl start nginx.service || true
+  fi
+}
+
 mkdir -p {{ xmpp_stack_letsencrypt_dir }}
+rm -f "$RENEWED_MARKER"
 
 {% if xmpp_stack_enable_nginx %}
+trap restore_nginx EXIT INT TERM
 systemctl stop nginx.service || true
+NGINX_STOPPED=1
 {% endif %}
 podman run --rm \
-  -p 80:80 \
+  --network host \
   -v {{ xmpp_stack_letsencrypt_dir }}:/etc/letsencrypt:Z \
   docker.io/certbot/certbot:latest \
   renew \
   --standalone \
+  --deploy-hook "touch /etc/letsencrypt/.xmppstack-renewed" \
   --quiet
+
 {% if xmpp_stack_enable_nginx %}
-systemctl start nginx.service
-systemctl restart ejabberd.service coturn.service nginx.service
-{% else %}
-systemctl restart ejabberd.service coturn.service
+systemctl start nginx.service || true
+NGINX_STOPPED=0
+trap - EXIT INT TERM
 {% endif %}
+
+if [ -f "$RENEWED_MARKER" ]; then
+  {{ xmpp_stack_app_root }}/scripts/sync-ejabberd-certs.sh
+{% if xmpp_stack_enable_nginx %}
+  systemctl restart ejabberd.service coturn.service
+  systemctl restart nginx.service || true
+{% else %}
+  systemctl restart ejabberd.service coturn.service
+{% endif %}
+  rm -f "$RENEWED_MARKER"
+fi

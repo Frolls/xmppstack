@@ -23,22 +23,124 @@
   no_log: true
 
 - name: Ensure optional Cloudflare SRV records
-  community.general.cloudflare_dns:
-    zone: "{{ xmpp_stack_dns_zone }}"
-    type: SRV
-    service: "{{ item.service }}"
-    proto: "{{ item.proto }}"
-    port: "{{ item.port }}"
-    priority: "{{ item.priority | default(10) }}"
-    weight: "{{ item.weight | default(10) }}"
-    value: "{{ item.value }}"
-    ttl: "{{ item.ttl | default(xmpp_stack_dns_ttl) }}"
-    state: present
-    api_token: "{{ xmpp_stack_dns_secrets.cloudflare_api_token }}"
+  ansible.builtin.uri:
+    url: "https://api.cloudflare.com/client/v4/zones?name={{ xmpp_stack_dns_zone }}&status=active&page=1&per_page=1"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ xmpp_stack_dns_secrets.cloudflare_api_token }}"
+    return_content: true
+    status_code: 200
+  register: xmpp_stack_cloudflare_zone_lookup
+  when: xmpp_stack_dns_manage_srv
+  delegate_to: localhost
+  become: false
+  no_log: true
+
+- name: Validate Cloudflare zone lookup for SRV records
+  ansible.builtin.assert:
+    that:
+      - xmpp_stack_cloudflare_zone_lookup.json.success | default(false)
+      - xmpp_stack_cloudflare_zone_lookup.json.result | length > 0
+    fail_msg: "Cloudflare zone {{ xmpp_stack_dns_zone }} was not found for SRV record management."
+  when: xmpp_stack_dns_manage_srv
+  delegate_to: localhost
+  become: false
+  no_log: true
+
+- name: Store Cloudflare zone id for SRV records
+  ansible.builtin.set_fact:
+    xmpp_stack_cloudflare_zone_id: "{{ xmpp_stack_cloudflare_zone_lookup.json.result[0].id }}"
+  when: xmpp_stack_dns_manage_srv
+  no_log: true
+
+- name: Fetch existing Cloudflare SRV records
+  ansible.builtin.uri:
+    url: "https://api.cloudflare.com/client/v4/zones/{{ xmpp_stack_cloudflare_zone_id }}/dns_records?type=SRV&per_page=100"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ xmpp_stack_dns_secrets.cloudflare_api_token }}"
+    return_content: true
+    status_code: 200
+  register: xmpp_stack_cloudflare_srv_lookup
+  when: xmpp_stack_dns_manage_srv
+  delegate_to: localhost
+  become: false
+  no_log: true
+
+- name: Store existing Cloudflare SRV records
+  ansible.builtin.set_fact:
+    xmpp_stack_cloudflare_existing_srv_records: "{{ xmpp_stack_cloudflare_srv_lookup.json.result | default([]) }}"
+  when: xmpp_stack_dns_manage_srv
+  no_log: true
+
+- name: Ensure optional Cloudflare SRV records
+  ansible.builtin.command:
+    argv:
+      - curl
+      - --silent
+      - --show-error
+      - --fail-with-body
+      - --request
+      - "{{ 'PATCH' if xmpp_stack_cloudflare_existing_srv_record.id is defined else 'POST' }}"
+      - --url
+      - >-
+        https://api.cloudflare.com/client/v4/zones/{{ xmpp_stack_cloudflare_zone_id }}/dns_records
+        {%- if xmpp_stack_cloudflare_existing_srv_record.id is defined -%}/{{ xmpp_stack_cloudflare_existing_srv_record.id }}{%- endif -%}
+      - --header
+      - "Authorization: Bearer {{ xmpp_stack_dns_secrets.cloudflare_api_token }}"
+      - --header
+      - "Content-Type: application/json"
+      - --data-binary
+      - "@-"
+    stdin: "{{ xmpp_stack_cloudflare_srv_body | to_json }}"
+  vars:
+    xmpp_stack_cloudflare_srv_record_name: "{{ item.record | default(xmpp_stack_dns_record_base) }}"
+    xmpp_stack_cloudflare_srv_base_name: >-
+      {{
+        xmpp_stack_dns_zone
+        if xmpp_stack_cloudflare_srv_record_name == '@'
+        else xmpp_stack_cloudflare_srv_record_name ~ '.' ~ xmpp_stack_dns_zone
+      }}
+    xmpp_stack_cloudflare_srv_name: >-
+      {{ '_' ~ item.service ~ '._' ~ item.proto ~ '.' ~ xmpp_stack_cloudflare_srv_base_name }}
+    xmpp_stack_cloudflare_existing_srv_record: >-
+      {{
+        (
+          xmpp_stack_cloudflare_existing_srv_records
+          | selectattr('name', 'equalto', xmpp_stack_cloudflare_srv_name)
+          | list
+          | first
+        ) | default({})
+      }}
+    xmpp_stack_cloudflare_srv_body: >-
+      {{
+        {
+          'type': 'SRV',
+          'name': xmpp_stack_cloudflare_srv_name,
+          'ttl': (item.ttl | default(xmpp_stack_dns_ttl) | int),
+          'data': {
+            'priority': (item.priority | default(10) | int),
+            'weight': (item.weight | default(10) | int),
+            'port': (item.port | int),
+            'target': item.value
+          }
+        }
+      }}
   loop: "{{ xmpp_stack_dns_srv_records }}"
   loop_control:
-    label: "_{{ item.service }}._{{ item.proto }}"
-  when: xmpp_stack_dns_manage_srv
+    label: "{{ xmpp_stack_cloudflare_srv_name }}"
+  when:
+    - xmpp_stack_dns_manage_srv
+    - >-
+      xmpp_stack_cloudflare_existing_srv_record.id is not defined or
+      (xmpp_stack_cloudflare_existing_srv_record.ttl | default(0) | int) != (item.ttl | default(xmpp_stack_dns_ttl) | int) or
+      (xmpp_stack_cloudflare_existing_srv_record.data.priority | default(-1) | int) != (item.priority | default(10) | int) or
+      (xmpp_stack_cloudflare_existing_srv_record.data.weight | default(-1) | int) != (item.weight | default(10) | int) or
+      (xmpp_stack_cloudflare_existing_srv_record.data.port | default(-1) | int) != (item.port | int) or
+      (xmpp_stack_cloudflare_existing_srv_record.data.target | default('')) != item.value
+  delegate_to: localhost
+  become: false
+  changed_when: true
   no_log: true
 
 - name: Ensure optional Cloudflare TXT records

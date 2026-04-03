@@ -38,6 +38,10 @@ argument_specs:
         type: bool
         description:
           - Enable management of TXT records such as _xmppconnect.
+      xmpp_stack_dns_record_base:
+        type: str
+        description:
+          - Relative DNS owner name for records managed under the selected zone.
       xmpp_stack_websocket_url:
         type: str
         description:

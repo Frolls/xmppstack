@@ -37,6 +37,16 @@ argument_specs:
         required: true
         description:
           - Host path where Let's Encrypt state and certificates are stored.
+      xmpp_stack_ejabberd_certs_dir:
+        type: str
+        required: true
+        description:
+          - Host path where ejabberd-readable certificate copies are stored.
+      xmpp_stack_ejabberd_image:
+        type: str
+        required: true
+        description:
+          - ejabberd image reference used to detect the runtime UID/GID for certificate copies.
       xmpp_stack_enable_nginx:
         type: bool
         description:

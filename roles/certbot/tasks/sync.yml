@@ -1,0 +1,15 @@
+---
+- name: Check whether certificate exists for ejabberd cert sync
+  ansible.builtin.stat:
+    path: "{{ xmpp_stack_letsencrypt_dir }}/live/{{ xmpp_stack_domain }}/fullchain.pem"
+  register: xmpp_stack_ejabberd_sync_cert_stat
+
+- name: Sync ejabberd-readable certificate copies
+  ansible.builtin.command:
+    argv:
+      - "{{ xmpp_stack_app_root }}/scripts/sync-ejabberd-certs.sh"
+  when:
+    - xmpp_stack_ejabberd_sync_cert_stat.stat.exists
+    - not ansible_check_mode
+  changed_when: true
+

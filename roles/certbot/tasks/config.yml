@@ -13,6 +13,9 @@
     - src: scripts/certbot-renew.sh.j2
       dest: "{{ xmpp_stack_app_root }}/scripts/certbot-renew.sh"
       mode: "0755"
+    - src: scripts/sync-ejabberd-certs.sh.j2
+      dest: "{{ xmpp_stack_app_root }}/scripts/sync-ejabberd-certs.sh"
+      mode: "0755"
 
 - name: Install certbot renewal units
   ansible.builtin.template:

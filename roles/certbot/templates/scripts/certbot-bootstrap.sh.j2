@@ -1,14 +1,15 @@
 #!/usr/bin/env sh
 set -eu
 
-if [ -f "{{ xmpp_stack_app_root }}/.env" ]; then
-  set -a
-  . "{{ xmpp_stack_app_root }}/.env"
-  set +a
-fi
+CERTBOT_EMAIL="{{ xmpp_stack_certbot_email }}"
+CERTBOT_DOMAINS="{{ xmpp_stack_certbot_domains | join(',') }}"
+NGINX_STOPPED=0
 
-: "${CERTBOT_EMAIL:?CERTBOT_EMAIL must be set}"
-: "${CERTBOT_DOMAINS:?CERTBOT_DOMAINS must be set}"
+restore_nginx() {
+  if [ "$NGINX_STOPPED" -eq 1 ]; then
+    systemctl start nginx.service || true
+  fi
+}
 
 mkdir -p {{ xmpp_stack_letsencrypt_dir }}
 
@@ -23,10 +24,12 @@ done
 IFS="$OLD_IFS"
 
 {% if xmpp_stack_enable_nginx %}
+trap restore_nginx EXIT INT TERM
 systemctl stop nginx.service || true
+NGINX_STOPPED=1
 {% endif %}
 podman run --rm \
-  -p 80:80 \
+  --network host \
   -v {{ xmpp_stack_letsencrypt_dir }}:/etc/letsencrypt:Z \
   docker.io/certbot/certbot:latest \
   certonly \
@@ -35,9 +38,13 @@ podman run --rm \
   --agree-tos \
   --email "$CERTBOT_EMAIL" \
   $DOMAINS_ARGS
+{{ xmpp_stack_app_root }}/scripts/sync-ejabberd-certs.sh
 {% if xmpp_stack_enable_nginx %}
-systemctl start nginx.service
-systemctl restart ejabberd.service coturn.service nginx.service
+systemctl start nginx.service || true
+NGINX_STOPPED=0
+trap - EXIT INT TERM
+systemctl restart ejabberd.service coturn.service
+systemctl restart nginx.service || true
 {% else %}
 systemctl restart ejabberd.service coturn.service
 {% endif %}

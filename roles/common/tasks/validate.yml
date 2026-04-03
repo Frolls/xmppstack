@@ -11,4 +11,5 @@
       - xmpp_stack_admin_jid | length > 0
       - xmpp_stack_certbot_email | length > 0
       - xmpp_stack_certbot_domains | length > 0
+      - xmpp_stack_http_upload_max_size | int > 0
     fail_msg: Set the required xmpp_stack_* variables in inventory/group_vars before running the role.

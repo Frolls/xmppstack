@@ -33,11 +33,19 @@ argument_specs:
         type: int
         description:
           - Internal ejabberd HTTP/WebSocket/upload port that nginx proxies to.
+      xmpp_stack_ejabberd_internal_host:
+        type: str
+        description:
+          - Internal ejabberd hostname used by nginx inside the podman network.
       xmpp_stack_app_root:
         type: str
         required: true
         description:
           - Runtime root where the rendered nginx config is stored.
+      xmpp_stack_http_upload_max_size:
+        type: int
+        description:
+          - Maximum request body size nginx should allow for ejabberd uploads.
       xmpp_stack_letsencrypt_dir:
         type: str
         required: true

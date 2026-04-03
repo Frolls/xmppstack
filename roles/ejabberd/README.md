@@ -14,11 +14,14 @@ Manages:
 | --- | --- |
 | `xmpp_stack_ejabberd_image` | Local ejabberd image tag. |
 | `xmpp_stack_build_images` | Whether the role should rebuild the local ejabberd image. |
+| `xmpp_stack_upload_host` | Hostname used by `mod_http_upload`. |
+| `xmpp_stack_conference_host` | Hostname used by `mod_muc`. |
 | `xmpp_stack_log_level` | ejabberd log verbosity. |
 | `xmpp_stack_postgres_db` | Database name used by ejabberd. |
 | `xmpp_stack_postgres_user` | Database user used by ejabberd. |
 | `xmpp_stack_postgres_password` | Database password used by ejabberd. |
 | `xmpp_stack_upload_dir` | Host path mounted for HTTP upload storage. |
+| `xmpp_stack_http_upload_max_size` | Maximum allowed HTTP upload size in bytes. |
 
 ## Notes
 

@@ -27,6 +27,10 @@ argument_specs:
         required: true
         description:
           - Host path used for persistent PostgreSQL data.
+      xmpp_stack_postgres_port:
+        type: int
+        description:
+          - Host port published for internal stack access to PostgreSQL.
       xmpp_stack_app_root:
         type: str
         required: true

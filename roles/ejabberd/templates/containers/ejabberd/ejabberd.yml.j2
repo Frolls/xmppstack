@@ -8,7 +8,8 @@ log_rotate_size: 10485760
 
 default_db: sql
 sql_type: pgsql
-sql_server: postgres
+sql_server: {{ xmpp_stack_postgres_host }}
+sql_port: {{ xmpp_stack_postgres_port }}
 sql_database: {{ xmpp_stack_postgres_db }}
 sql_username: {{ xmpp_stack_postgres_user }}
 sql_password: "{{ xmpp_stack_postgres_password }}"
@@ -23,8 +24,8 @@ disable_sasl_mechanisms:
   - "X-OAUTH2"
 
 certfiles:
-  - "/etc/letsencrypt/live/{{ xmpp_stack_domain }}/fullchain.pem"
-  - "/etc/letsencrypt/live/{{ xmpp_stack_domain }}/privkey.pem"
+  - "/etc/ejabberd-certs/fullchain.pem"
+  - "/etc/ejabberd-certs/privkey.pem"
 
 define_macro:
   'TLS_CIPHERS': "HIGH:!aNULL:!eNULL:!3DES:@STRENGTH"
@@ -166,9 +167,9 @@ modules:
   mod_disco: {}
   mod_fail2ban: {}
   mod_http_upload:
-    host: "upload.@HOST@"
+    host: "{{ xmpp_stack_upload_host }}"
     access: http_upload
-    max_size: 52428800
+    max_size: {{ xmpp_stack_http_upload_max_size }}
     docroot: "/var/lib/ejabberd/upload"
     put_url: "{{ xmpp_stack_http_upload_url }}"
     get_url: "{{ xmpp_stack_http_upload_url }}"
@@ -187,8 +188,11 @@ modules:
     db_type: sql
     default: always
     assume_mam_usage: true
+  mod_register:
+    access: register
+    captcha_protected: false
   mod_muc:
-    host: "conference.@HOST@"
+    host: "{{ xmpp_stack_conference_host }}"
     access:
       - allow: local
     access_create: muc_create
@@ -231,6 +235,7 @@ modules:
     resend_on_timeout: if_offline
   mod_vcard:
     search: false
+  mod_vcard_xupdate: {}
   mod_stun_disco:
     credentials_lifetime: 12h
     services:

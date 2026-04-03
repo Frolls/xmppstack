@@ -97,6 +97,7 @@ Shared host preparation for the XMPP stack:
 | `xmpp_stack_dns_manage_txt` | Enables optional TXT record management. |
 | `xmpp_stack_websocket_url` | URL published in `_xmppconnect` for WebSocket discovery. |
 | `xmpp_stack_http_upload_url` | Public HTTP upload URL used by ejabberd. |
+| `xmpp_stack_http_upload_max_size` | Maximum HTTP upload size in bytes used by ejabberd and nginx. Default: `52428800`. |
 | `xmpp_stack_dns_records` | Declarative list of DNS records to manage. |
 | `xmpp_stack_dns_srv_records` | Declarative list of SRV records to manage when enabled. |
 | `xmpp_stack_dns_txt_records` | Declarative list of TXT records to manage when enabled. |

@@ -7,7 +7,7 @@ http {
   }
 
   upstream ejabberd_http {
-    server ejabberd:{{ xmpp_stack_ejabberd_http_port }};
+    server {{ xmpp_stack_ejabberd_internal_host }}:{{ xmpp_stack_ejabberd_http_port }};
   }
 
   server {
@@ -19,10 +19,12 @@ http {
   }
 
   server {
-    listen {{ xmpp_stack_https_port }} ssl http2;
-    listen [::]:{{ xmpp_stack_https_port }} ssl http2;
+    listen {{ xmpp_stack_https_port }} ssl;
+    listen [::]:{{ xmpp_stack_https_port }} ssl;
+    http2 on;
     server_name {{ xmpp_stack_domain }} {{ xmpp_stack_upload_host }};
 
+    client_max_body_size {{ xmpp_stack_http_upload_max_size }};
     ssl_certificate /etc/letsencrypt/live/{{ xmpp_stack_domain }}/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/{{ xmpp_stack_domain }}/privkey.pem;
     ssl_session_timeout 1d;

@@ -32,6 +32,10 @@ argument_specs:
         type: str
         description:
           - Destination directory for operational backup scripts.
+      xmpp_stack_ejabberd_certs_dir:
+        type: str
+        description:
+          - Host directory where ejabberd-readable certificate copies are stored.
       xmpp_stack_domain:
         type: str
         required: true
@@ -145,6 +149,18 @@ argument_specs:
         required: true
         description:
           - PostgreSQL password used by ejabberd.
+      xmpp_stack_postgres_host:
+        type: str
+        description:
+          - Internal PostgreSQL hostname used by ejabberd inside the podman network.
+      xmpp_stack_postgres_port:
+        type: int
+        description:
+          - Host port used by ejabberd to reach PostgreSQL through host.containers.internal.
+      xmpp_stack_ejabberd_internal_host:
+        type: str
+        description:
+          - Internal ejabberd hostname used by nginx inside the podman network.
       xmpp_stack_admin_jid:
         type: str
         required: true
@@ -209,6 +225,10 @@ argument_specs:
         type: bool
         description:
           - Enable management of TXT DNS records such as _xmppconnect.
+      xmpp_stack_dns_record_base:
+        type: str
+        description:
+          - Relative DNS owner name for records under xmpp_stack_dns_zone, or @ for the zone apex.
       xmpp_stack_websocket_url:
         type: str
         description:
@@ -232,6 +252,10 @@ argument_specs:
         elements: dict
         description:
           - Declarative list of TXT DNS records to manage.
+      xmpp_stack_http_upload_max_size:
+        type: int
+        description:
+          - Maximum allowed ejabberd HTTP upload size in bytes.
       xmpp_stack_log_level:
         type: int
         description:

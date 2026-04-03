@@ -7,16 +7,10 @@ Requires=postgres.service coturn.service
 Image={{ xmpp_stack_ejabberd_image }}
 ContainerName=ejabberd
 Volume={{ xmpp_stack_app_root }}/containers/ejabberd/ejabberd.yml:/home/ejabberd/conf/ejabberd.yml:ro,Z
-Volume={{ xmpp_stack_upload_dir }}:/var/lib/ejabberd/upload:Z
+Volume={{ xmpp_stack_upload_dir }}:/var/lib/ejabberd/upload:Z,U
+Volume={{ xmpp_stack_ejabberd_certs_dir }}:/etc/ejabberd-certs:ro,Z
 Volume={{ xmpp_stack_letsencrypt_dir }}:/etc/letsencrypt:ro,Z
-PublishPort={{ xmpp_stack_c2s_port }}:{{ xmpp_stack_c2s_port }}
-{% if xmpp_stack_enable_federation %}
-PublishPort={{ xmpp_stack_s2s_port }}:{{ xmpp_stack_s2s_port }}
-{% endif %}
-{% if not xmpp_stack_enable_nginx %}
-PublishPort={{ xmpp_stack_ejabberd_http_port }}:{{ xmpp_stack_ejabberd_http_port }}
-{% endif %}
-Network=xmpp.network
+Network=host
 
 [Service]
 Restart=always

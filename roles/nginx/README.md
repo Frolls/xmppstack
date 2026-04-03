@@ -11,6 +11,7 @@ service once certificates are present.
 | --- | --- |
 | `xmpp_stack_enable_nginx` | Enables this optional role from the playbook level. Default: `true`. |
 | `xmpp_stack_nginx_image` | nginx container image. Default: `docker.io/library/nginx:1.28-alpine`. |
+| `xmpp_stack_http_upload_max_size` | Maximum request body size nginx should accept for ejabberd uploads. |
 
 ## Notes
 

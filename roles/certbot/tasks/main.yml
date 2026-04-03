@@ -13,6 +13,13 @@
     - certificates
     - certbot
 
+- name: Sync ejabberd certificate copies
+  ansible.builtin.import_tasks: sync.yml
+  tags:
+    - config
+    - certificates
+    - certbot
+
 - name: Ensure certbot renewal timer is enabled and started
   ansible.builtin.import_tasks: service.yml
   tags:

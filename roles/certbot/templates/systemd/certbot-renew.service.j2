@@ -6,5 +6,4 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 WorkingDirectory={{ xmpp_stack_app_root }}
-EnvironmentFile={{ xmpp_stack_app_root }}/.env
 ExecStart={{ xmpp_stack_app_root }}/scripts/certbot-renew.sh

@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+set -eu
+
+EJABBERD_CERTS_DIR="{{ xmpp_stack_ejabberd_certs_dir }}"
+EJABBERD_UID="$(podman run --rm --entrypoint sh {{ xmpp_stack_ejabberd_image }} -c 'id -u')"
+EJABBERD_GID="$(podman run --rm --entrypoint sh {{ xmpp_stack_ejabberd_image }} -c 'id -g')"
+
+install -d -m 0750 -o "$EJABBERD_UID" -g "$EJABBERD_GID" "$EJABBERD_CERTS_DIR"
+cp -L {{ xmpp_stack_letsencrypt_dir }}/live/{{ xmpp_stack_domain }}/fullchain.pem "$EJABBERD_CERTS_DIR/fullchain.pem"
+cp -L {{ xmpp_stack_letsencrypt_dir }}/live/{{ xmpp_stack_domain }}/privkey.pem "$EJABBERD_CERTS_DIR/privkey.pem"
+chown "$EJABBERD_UID:$EJABBERD_GID" "$EJABBERD_CERTS_DIR/fullchain.pem" "$EJABBERD_CERTS_DIR/privkey.pem"
+chmod 0640 "$EJABBERD_CERTS_DIR/fullchain.pem" "$EJABBERD_CERTS_DIR/privkey.pem"
+
