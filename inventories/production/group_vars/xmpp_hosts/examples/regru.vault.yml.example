@@ -1,0 +1,8 @@
+---
+xmpp_stack_secrets:
+  postgres_password: change-me
+  turn_static_auth_secret: change-me
+
+xmpp_stack_dns_secrets:
+  regru_username: change-me
+  regru_password: change-me

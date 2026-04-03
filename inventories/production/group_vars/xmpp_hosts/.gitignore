@@ -2,3 +2,5 @@
 !.gitignore
 !main.yml.example
 !vault.yml.example
+!examples/
+!examples/*.yml.example

@@ -6,3 +6,4 @@ exclude_paths:
 skip_list:
   - yaml[line-length]
   - name[casing]
+  - var-naming[no-role-prefix]
