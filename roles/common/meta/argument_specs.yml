@@ -36,6 +36,22 @@ argument_specs:
         type: str
         description:
           - Host directory where ejabberd-readable certificate copies are stored.
+      xmpp_stack_site_enabled:
+        type: bool
+        description:
+          - Enable serving an additional static root site through the shared nginx instance.
+      xmpp_stack_site_domain:
+        type: str
+        description:
+          - Primary hostname of the static site served alongside the XMPP stack.
+      xmpp_stack_site_www_domain:
+        type: str
+        description:
+          - Optional www hostname that redirects to the primary static site hostname.
+      xmpp_stack_site_root:
+        type: str
+        description:
+          - Host directory containing the built static site files served by nginx.
       xmpp_stack_domain:
         type: str
         required: true
@@ -186,6 +202,10 @@ argument_specs:
         required: true
         description:
           - Domain names that should be covered by the TLS certificate.
+      xmpp_stack_expand_certificates:
+        type: bool
+        description:
+          - Allow certificate SAN expansion during regular deploys when effective domain coverage changes.
       xmpp_stack_certbot_renew_schedule:
         type: str
         description:

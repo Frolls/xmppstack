@@ -2,7 +2,9 @@
 set -eu
 
 CERTBOT_EMAIL="{{ xmpp_stack_certbot_email }}"
-CERTBOT_DOMAINS="{{ xmpp_stack_certbot_domains | join(',') }}"
+CERTBOT_DOMAINS="{{ xmpp_stack_certbot_effective_domains | join(',') }}"
+CERTBOT_CERT_NAME="{{ xmpp_stack_domain }}"
+CERTBOT_CERT_PATH="{{ xmpp_stack_letsencrypt_dir }}/live/{{ xmpp_stack_domain }}/fullchain.pem"
 NGINX_STOPPED=0
 
 restore_nginx() {
@@ -16,12 +18,17 @@ mkdir -p {{ xmpp_stack_letsencrypt_dir }}
 systemctl start xmpp-network-network.service postgres.service || true
 
 DOMAINS_ARGS=""
+CERTBOT_MODE_ARGS="--cert-name $CERTBOT_CERT_NAME"
 OLD_IFS="$IFS"
 IFS=','
 for domain in $CERTBOT_DOMAINS; do
   DOMAINS_ARGS="$DOMAINS_ARGS -d $domain"
 done
 IFS="$OLD_IFS"
+
+if [ -f "$CERTBOT_CERT_PATH" ]; then
+  CERTBOT_MODE_ARGS="$CERTBOT_MODE_ARGS --expand"
+fi
 
 {% if xmpp_stack_enable_nginx %}
 trap restore_nginx EXIT INT TERM
@@ -37,6 +44,7 @@ podman run --rm \
   --non-interactive \
   --agree-tos \
   --email "$CERTBOT_EMAIL" \
+  $CERTBOT_MODE_ARGS \
   $DOMAINS_ARGS
 {{ xmpp_stack_app_root }}/scripts/sync-ejabberd-certs.sh
 {% if xmpp_stack_enable_nginx %}

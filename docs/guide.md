@@ -171,7 +171,9 @@ Secrets:
 
 Operational toggles:
 - `xmpp_stack_issue_certificates`
-  Whether the certbot role may bootstrap certificates.
+  Whether the certbot role may bootstrap the first certificate.
+- `xmpp_stack_expand_certificates`
+  Whether the certbot role may expand an existing certificate when the effective domain set grows.
 - `xmpp_stack_build_images`
   Whether ejabberd and coturn roles build local images.
 - `xmpp_stack_manage_dns`
@@ -221,6 +223,8 @@ Paths:
   First-run path. Allows initial certificate issuance.
 - `playbooks/deploy.yml`
   Regular deployment path. Intended for updates after the system already exists.
+  This path keeps first-run certificate bootstrap disabled, but may still expand
+  an existing certificate SAN set when `xmpp_stack_expand_certificates: true`.
 - `playbooks/site.yml`
   All-in-one entry point.
 

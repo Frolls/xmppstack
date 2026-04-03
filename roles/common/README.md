@@ -20,6 +20,9 @@ Shared host preparation for the XMPP stack:
 | `xmpp_stack_public_ip` | Public IP used by TURN. |
 | `xmpp_stack_public_ipv6` | Optional public IPv6 used for `AAAA` records. |
 | `xmpp_stack_enable_nginx` | Enables the optional `nginx` reverse-proxy layer. Default: `true`. |
+| `xmpp_stack_site_enabled` | Enables an optional static root site served by the shared `nginx` instance. |
+| `xmpp_stack_site_domain` | Primary hostname of the optional static root site. |
+| `xmpp_stack_site_www_domain` | Optional www hostname redirected to the primary root-site hostname. |
 | `xmpp_stack_admin_jid` | Administrative JID. |
 | `xmpp_stack_certbot_email` | Contact email for Let's Encrypt. |
 | `xmpp_stack_certbot_domains` | Domains passed to certificate issuance. |
@@ -49,6 +52,7 @@ Shared host preparation for the XMPP stack:
 | `xmpp_stack_upload_dir` | ejabberd upload path. |
 | `xmpp_stack_letsencrypt_dir` | Certificate storage path. |
 | `xmpp_stack_backups_dir` | Backup destination path. |
+| `xmpp_stack_site_root` | Host path where built static files for the optional root site are served from. |
 
 ### Shared Secrets And Derived Values
 
@@ -65,6 +69,7 @@ Shared host preparation for the XMPP stack:
 | Variable | Description |
 | --- | --- |
 | `xmpp_stack_issue_certificates` | Allows certificate bootstrap in the `certbot` role. |
+| `xmpp_stack_expand_certificates` | Allows SAN expansion for an existing certificate during regular deploys. |
 | `xmpp_stack_build_images` | Enables local image rebuilds for `ejabberd` and `coturn`. |
 | `xmpp_stack_manage_dns` | Enables the optional `dns` role. |
 | `xmpp_stack_firewall_enabled` | Enables the `firewall` role. Default: `true`. |

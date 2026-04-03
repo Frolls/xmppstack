@@ -12,4 +12,7 @@
       - xmpp_stack_certbot_email | length > 0
       - xmpp_stack_certbot_domains | length > 0
       - xmpp_stack_http_upload_max_size | int > 0
+      - not xmpp_stack_site_enabled or xmpp_stack_enable_nginx
+      - not xmpp_stack_site_enabled or xmpp_stack_site_domain | length > 0
+      - xmpp_stack_site_enabled or xmpp_stack_site_www_domain | length == 0
     fail_msg: Set the required xmpp_stack_* variables in inventory/group_vars before running the role.

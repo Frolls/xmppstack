@@ -4,9 +4,49 @@
     path: "{{ xmpp_stack_letsencrypt_dir }}/live/{{ xmpp_stack_domain }}/fullchain.pem"
   register: xmpp_stack_cert_stat
 
-- name: Determine whether certificate bootstrap is needed
+- name: Read existing certificate SANs
+  ansible.builtin.command:
+    argv:
+      - openssl
+      - x509
+      - -in
+      - "{{ xmpp_stack_letsencrypt_dir }}/live/{{ xmpp_stack_domain }}/fullchain.pem"
+      - -noout
+      - -ext
+      - subjectAltName
+  register: xmpp_stack_cert_san
+  changed_when: false
+  when: xmpp_stack_cert_stat.stat.exists
+
+- name: Derive existing certificate domains
   ansible.builtin.set_fact:
     xmpp_stack_bootstrap_needed: "{{ not xmpp_stack_cert_stat.stat.exists }}"
+    xmpp_stack_cert_existing_domains: >-
+      {{
+        (
+          xmpp_stack_cert_san.stdout
+          | default('')
+          | regex_findall('DNS:([^,\\s]+)')
+        )
+        | unique
+      }}
+
+- name: Derive certificate coverage state
+  ansible.builtin.set_fact:
+    xmpp_stack_cert_missing_domains: >-
+      {{
+        xmpp_stack_certbot_effective_domains
+        | difference(xmpp_stack_cert_existing_domains | default([]))
+      }}
+    xmpp_stack_cert_expand_needed: >-
+      {{
+        xmpp_stack_cert_stat.stat.exists
+        and (
+          xmpp_stack_certbot_effective_domains
+          | difference(xmpp_stack_cert_existing_domains | default([]))
+          | length > 0
+        )
+      }}
 
 - name: Fail if certificate is missing and bootstrap is disabled
   ansible.builtin.fail:
@@ -15,7 +55,16 @@
     - xmpp_stack_bootstrap_needed
     - not xmpp_stack_issue_certificates
 
-- name: Start prerequisite services for certificate bootstrap
+- name: Fail if certificate expansion is needed and expansion is disabled
+  ansible.builtin.fail:
+    msg: >-
+      Certificate coverage does not match xmpp_stack_certbot_effective_domains
+      and xmpp_stack_expand_certificates is disabled.
+  when:
+    - xmpp_stack_cert_expand_needed
+    - not xmpp_stack_expand_certificates
+
+- name: Start prerequisite services for certificate issuance
   ansible.builtin.systemd_service:
     name: "{{ item }}"
     state: started
@@ -23,15 +72,29 @@
     - xmpp-network-network.service
     - postgres.service
   when:
-    - xmpp_stack_bootstrap_needed
-    - xmpp_stack_issue_certificates
+    - >-
+        (
+          xmpp_stack_bootstrap_needed
+          and xmpp_stack_issue_certificates
+        )
+        or (
+          xmpp_stack_cert_expand_needed
+          and xmpp_stack_expand_certificates
+        )
 
-- name: Bootstrap first certificate
+- name: Ensure certificate coverage
   ansible.builtin.command:
     argv:
       - "{{ xmpp_stack_app_root }}/scripts/certbot-bootstrap.sh"
   when:
-    - xmpp_stack_bootstrap_needed
-    - xmpp_stack_issue_certificates
+    - >-
+        (
+          xmpp_stack_bootstrap_needed
+          and xmpp_stack_issue_certificates
+        )
+        or (
+          xmpp_stack_cert_expand_needed
+          and xmpp_stack_expand_certificates
+        )
     - not ansible_check_mode
-  changed_when: xmpp_stack_bootstrap_needed
+  changed_when: xmpp_stack_bootstrap_needed or xmpp_stack_cert_expand_needed

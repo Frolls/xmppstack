@@ -11,6 +11,32 @@ xmpp_stack_upload_dir: "{{ xmpp_stack_data_root }}/ejabberd/upload"
 xmpp_stack_letsencrypt_dir: "{{ xmpp_stack_data_root }}/letsencrypt"
 xmpp_stack_backups_dir: "{{ xmpp_stack_data_root }}/backups"
 xmpp_stack_ejabberd_certs_dir: "{{ xmpp_stack_app_root }}/certs/ejabberd"
+xmpp_stack_site_enabled: false
+xmpp_stack_site_domain: ""
+xmpp_stack_site_www_domain: ""
+xmpp_stack_site_root: "{{ xmpp_stack_app_root }}/site/root"
+xmpp_stack_site_dns_record_base: >-
+  {{
+    '@'
+    if xmpp_stack_site_domain == xmpp_stack_dns_zone
+    else (
+      xmpp_stack_site_domain
+      | regex_replace('\\.' ~ xmpp_stack_dns_zone ~ '$', '')
+    )
+  }}
+xmpp_stack_site_www_dns_record_base: >-
+  {{
+    ''
+    if xmpp_stack_site_www_domain | length == 0
+    else (
+      '@'
+      if xmpp_stack_site_www_domain == xmpp_stack_dns_zone
+      else (
+        xmpp_stack_site_www_domain
+        | regex_replace('\\.' ~ xmpp_stack_dns_zone ~ '$', '')
+      )
+    )
+  }}
 
 xmpp_stack_domain: ""
 xmpp_stack_upload_host: ""
@@ -51,6 +77,27 @@ xmpp_stack_turn_static_auth_secret: "{{ xmpp_stack_secrets.turn_static_auth_secr
 
 xmpp_stack_certbot_email: ""
 xmpp_stack_certbot_domains: []
+xmpp_stack_expand_certificates: true
+xmpp_stack_site_domains: >-
+  {{
+    [xmpp_stack_site_domain, xmpp_stack_site_www_domain]
+    | reject('equalto', '')
+    | list
+    if xmpp_stack_site_enabled
+    else []
+  }}
+xmpp_stack_certbot_effective_domains: >-
+  {{
+    (
+      xmpp_stack_certbot_domains
+      + (
+        xmpp_stack_site_domains
+        if (xmpp_stack_enable_nginx | bool and xmpp_stack_site_enabled | bool)
+        else []
+      )
+    )
+    | unique
+  }}
 xmpp_stack_certbot_renew_schedule: "*-*-* 03,15:00:00"
 
 xmpp_stack_manage_dns: false
@@ -127,6 +174,32 @@ xmpp_stack_dns_records: >-
     + (
       [
         {
+          'record': xmpp_stack_site_dns_record_base,
+          'type': 'A',
+          'value': xmpp_stack_public_ip,
+          'proxied': false,
+          'ttl': xmpp_stack_dns_ttl
+        }
+      ]
+      + (
+        [
+          {
+            'record': xmpp_stack_site_www_dns_record_base,
+            'type': 'A',
+            'value': xmpp_stack_public_ip,
+            'proxied': false,
+            'ttl': xmpp_stack_dns_ttl
+          }
+        ]
+        if (xmpp_stack_site_www_domain | default('') | length > 0)
+        else []
+      )
+      if (xmpp_stack_enable_nginx | bool and xmpp_stack_site_enabled | bool and xmpp_stack_site_domain | length > 0)
+      else []
+    )
+    + (
+      [
+        {
           'record': xmpp_stack_dns_record_base,
           'type': 'AAAA',
           'value': xmpp_stack_public_ipv6,
@@ -154,6 +227,35 @@ xmpp_stack_dns_records: >-
         }
       ]
       if (xmpp_stack_public_ipv6 | default('') | length > 0)
+      else []
+    )
+    + (
+      [
+        {
+          'record': xmpp_stack_site_dns_record_base,
+          'type': 'AAAA',
+          'value': xmpp_stack_public_ipv6,
+          'ttl': xmpp_stack_dns_ttl
+        }
+      ]
+      + (
+        [
+          {
+            'record': xmpp_stack_site_www_dns_record_base,
+            'type': 'AAAA',
+            'value': xmpp_stack_public_ipv6,
+            'ttl': xmpp_stack_dns_ttl
+          }
+        ]
+        if (xmpp_stack_site_www_domain | default('') | length > 0)
+        else []
+      )
+      if (
+        xmpp_stack_public_ipv6 | default('') | length > 0
+        and xmpp_stack_enable_nginx | bool
+        and xmpp_stack_site_enabled | bool
+        and xmpp_stack_site_domain | length > 0
+      )
       else []
     )
   }}

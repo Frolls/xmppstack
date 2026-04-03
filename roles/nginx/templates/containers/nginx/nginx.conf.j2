@@ -10,6 +10,55 @@ http {
     server {{ xmpp_stack_ejabberd_internal_host }}:{{ xmpp_stack_ejabberd_http_port }};
   }
 
+{% if xmpp_stack_site_enabled and xmpp_stack_site_domain | length > 0 %}
+  server {
+    listen {{ xmpp_stack_http_port }};
+    listen [::]:{{ xmpp_stack_http_port }};
+    server_name {{ xmpp_stack_site_domain }}{% if xmpp_stack_site_www_domain | length > 0 %} {{ xmpp_stack_site_www_domain }}{% endif %};
+
+{% if xmpp_stack_site_www_domain | length > 0 %}
+    if ($host = {{ xmpp_stack_site_www_domain }}) {
+      return 308 https://{{ xmpp_stack_site_domain }}$request_uri;
+    }
+{% endif %}
+    return 308 https://$host$request_uri;
+  }
+
+{% if xmpp_stack_site_www_domain | length > 0 %}
+  server {
+    listen {{ xmpp_stack_https_port }} ssl;
+    listen [::]:{{ xmpp_stack_https_port }} ssl;
+    http2 on;
+    server_name {{ xmpp_stack_site_www_domain }};
+
+    ssl_certificate /etc/letsencrypt/live/{{ xmpp_stack_domain }}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/{{ xmpp_stack_domain }}/privkey.pem;
+    return 308 https://{{ xmpp_stack_site_domain }}$request_uri;
+  }
+{% endif %}
+
+  server {
+    listen {{ xmpp_stack_https_port }} ssl;
+    listen [::]:{{ xmpp_stack_https_port }} ssl;
+    http2 on;
+    server_name {{ xmpp_stack_site_domain }};
+
+    ssl_certificate /etc/letsencrypt/live/{{ xmpp_stack_domain }}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/{{ xmpp_stack_domain }}/privkey.pem;
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:SSL:10m;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+
+    root /srv/root-site;
+    index index.html;
+
+    location / {
+      try_files $uri $uri/ /index.html;
+    }
+  }
+{% endif %}
+
   server {
     listen {{ xmpp_stack_http_port }};
     listen [::]:{{ xmpp_stack_http_port }};

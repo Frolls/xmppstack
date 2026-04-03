@@ -7,6 +7,10 @@ argument_specs:
         type: bool
         description:
           - Allow the role to bootstrap the initial Let's Encrypt certificate.
+      xmpp_stack_expand_certificates:
+        type: bool
+        description:
+          - Allow the role to expand an existing certificate when new domains are added to the effective domain list.
       xmpp_stack_certbot_email:
         type: str
         required: true

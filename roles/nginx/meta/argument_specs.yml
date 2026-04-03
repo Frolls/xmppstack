@@ -16,6 +16,18 @@ argument_specs:
         required: true
         description:
           - Primary XMPP domain served over HTTPS and WebSocket.
+      xmpp_stack_site_enabled:
+        type: bool
+        description:
+          - Enable serving an additional static root site through the shared nginx instance.
+      xmpp_stack_site_domain:
+        type: str
+        description:
+          - Primary hostname of the static site served alongside the XMPP stack.
+      xmpp_stack_site_www_domain:
+        type: str
+        description:
+          - Optional www hostname that redirects to the primary static site hostname.
       xmpp_stack_upload_host:
         type: str
         required: true
@@ -51,3 +63,7 @@ argument_specs:
         required: true
         description:
           - Host path where TLS certificates are mounted from.
+      xmpp_stack_site_root:
+        type: str
+        description:
+          - Host directory containing the built static site files served by nginx.

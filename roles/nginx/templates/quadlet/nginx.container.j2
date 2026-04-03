@@ -8,6 +8,9 @@ Image={{ xmpp_stack_nginx_image }}
 ContainerName=nginx
 Volume={{ xmpp_stack_app_root }}/containers/nginx/nginx.conf:/etc/nginx/nginx.conf:ro,Z
 Volume={{ xmpp_stack_letsencrypt_dir }}:/etc/letsencrypt:ro,Z
+{% if xmpp_stack_site_enabled and xmpp_stack_site_domain | length > 0 %}
+Volume={{ xmpp_stack_site_root }}:/srv/root-site:ro,Z
+{% endif %}
 Network=host
 
 [Service]

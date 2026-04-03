@@ -14,6 +14,8 @@
     - "{{ xmpp_stack_app_root }}/containers/nginx"
     - "{{ xmpp_stack_app_root }}/certs"
     - "{{ xmpp_stack_ejabberd_certs_dir }}"
+    - "{{ xmpp_stack_app_root }}/site"
+    - "{{ xmpp_stack_site_root }}"
     - "{{ xmpp_stack_app_root }}/scripts"
     - "{{ xmpp_stack_app_root }}/systemd"
     - "{{ xmpp_stack_postgres_data_dir }}"
