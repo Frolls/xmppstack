@@ -15,9 +15,30 @@ service once certificates are present.
 
 ## Notes
 
-- This role acts only as the HTTPS entrypoint for ejabberd HTTP endpoints.
+- This role provides the HTTPS entrypoint for ejabberd HTTP endpoints and,
+  when enabled, the static [root site](../../docs/root-site.md).
 - Disable it when you prefer to expose ejabberd HTTP endpoints directly on `xmpp_stack_ejabberd_http_port`.
 - It is enabled before bootstrap, but only started immediately when
   certificates already exist.
 - Shared stack variables such as domain, upload host, paths, and certificate
   storage are documented in [common](../common/README.md).
+
+## Shared HTTP Configuration
+
+The template `templates/containers/nginx/nginx.conf.j2` sets these directives
+inside `http`:
+
+```nginx
+server_names_hash_bucket_size 64;
+include /etc/nginx/mime.types;
+default_type application/octet-stream;
+```
+
+The bucket size fixes the startup failure `could not build server_names_hash`
+seen with the configured hostnames and a bucket size of 32. MIME mappings ensure
+that static assets such as CSS are served with the correct content type.
+Keep these settings in the template: Ansible overwrites the runtime configuration.
+
+Configuration changes currently notify a service restart; the role does not
+run `nginx -t` automatically. See [operations](../../docs/operations.md#nginx)
+for validation, recovery, and reload commands.

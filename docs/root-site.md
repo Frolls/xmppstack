@@ -82,15 +82,41 @@ rsync -av --delete <build-dir>/ <user>@<host>:/tmp/root-site/
 ssh <user>@<host> 'sudo mkdir -p /opt/xmpp-infra/site/root && sudo rsync -av --delete /tmp/root-site/ /opt/xmpp-infra/site/root/'
 ```
 
-Then apply the infrastructure changes:
+For initial setup or changes to domains, certificates, or site paths, apply the
+infrastructure changes:
 
 ```bash
 ansible-playbook playbooks/deploy.yml -i inventories/production/hosts.yml --ask-vault-pass --ask-become-pass --tags dns,common,certbot,nginx
 ```
 
-Finally verify:
+Once infrastructure is configured, deploying new static files does not require
+redeploying the stack or restarting nginx.
+
+For changes limited to the nginx template, apply only that role:
 
 ```bash
-curl -Ik https://example.com
-curl -Ik https://www.example.com
+ansible-playbook playbooks/deploy.yml -i inventories/production/hosts.yml --ask-vault-pass --ask-become-pass --tags nginx
 ```
+
+Shared variable validation still runs. This command can restart the shared nginx
+service, affecting both the site and XMPP HTTPS endpoints; it does not redeploy
+PostgreSQL, ejabberd, or coturn. The role currently has no automatic `nginx -t`
+validation before restart. See [operations](operations.md#nginx) for manual
+configuration checks and recovery. If the corrected configuration is already
+running, no redeploy is needed solely to record the same fix in Git.
+
+Finally verify from an external network, with certificate validation enabled:
+
+```bash
+curl --fail --show-error -I https://example.com/
+curl --fail --show-error -I https://www.example.com/
+```
+
+Expect `200` for the root page and a redirect from `www` to the root domain.
+Also request an actual CSS URL referenced by the HTML and check for `200` and
+`Content-Type: text/css`. A running service or an existing `index.html` alone
+does not confirm that the site works.
+
+The shared [nginx template](../roles/nginx/templates/containers/nginx/nginx.conf.j2)
+includes MIME mappings and `server_names_hash_bucket_size 64` to preserve these
+settings on future deployments.

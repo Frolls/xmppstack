@@ -29,6 +29,16 @@ Use this checklist right after the first successful deployment.
 - TURN relay UDP range is not blocked by provider-side firewalling.
 - `5443/tcp` is not exposed publicly when `xmpp_stack_enable_nginx: true`.
 
+## Static Root Site
+
+When `xmpp_stack_site_enabled: true`:
+
+- The root page returns `200` over HTTPS with certificate validation enabled.
+- `www` redirects to the root domain when configured.
+- A CSS URL referenced by the page returns `200` and `Content-Type: text/css`.
+- Checks succeed from an external network, not only from the server.
+- See [nginx operations](operations.md#nginx) if the service fails to start.
+
 ## XMPP Functionality
 
 - Login works from a desktop client.
